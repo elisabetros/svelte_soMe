@@ -10,7 +10,6 @@
 <!-- ########################### -->
 
 <div class="posts">
-{console.log(posts)}
 {#each aPosts as post}
     <Post {...post} name={firstname+ " " + lastname} isLoggedIn={isLoggedIn} profilePicture={profilePicture}/>
 

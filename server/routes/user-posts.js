@@ -88,7 +88,7 @@ router.post('/likePost', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const { postID } = req.body
     const { user } = req.decoded
-    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.likes':{ 'firstname': user.firstname, 'lastname': user.lastname }}}, (err, dbResponse) => {
+    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.likes':{'userID': user._id,  'firstname': user.firstname, 'lastname': user.lastname }}}, (err, dbResponse) => {
         if(err){
             return res.status(500).send({error: err})
         }
@@ -109,4 +109,50 @@ router.delete('/likePost', auth.checkToken, async (req, res) => {
     })
 })
 
+router.post('/comment', auth.checkToken, async (req, res) => {
+    console.log('comment')
+    const userCollection = db.collection('users')
+    const { postID, comment } = req.body
+    const{ user } = req.decoded
+    if(!postID || !comment){
+        return res.status(500).send({error: 'Missing fields'})
+    }
+    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.comments':{ _id: new ObjectId(), 'userID': user._id, 'firstname': user.firstname, 'lastname': user.lastname, 'comment': comment }}}, (err, dbResponse) => {
+        if(err){
+            return res.status(500).send({error: err})
+        }
+        console.log(dbResponse)
+        return res.status(200).send({response: 'success'})
+    })
+})
+
+router.delete('/comment', auth.checkToken, async (req, res) => {
+    console.log('comment')
+    const userCollection = db.collection('users')
+    const { postID, commentID } = req.body
+    const { user } = req.decoded
+//   see if user already liked post
+    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$pull:{'posts.$.comments':{ '_id': ObjectId(commentID) }}}, (err, dbResponse) => {
+        if(err){
+            return res.status(500).send({error: err})
+        }
+        return res.status(200).send({dbResponse})
+    })
+})
+
+router.put('/updateComment', auth.checkToken, async (req, res) => {
+    const userCollection = db.collection('users')
+    const { postID, commentID, updatedComment } = req.body
+    const { user } = req.decoded
+    userCollection.updateOne(
+        { 'posts._id': ObjectId(postID) },
+        { $set: { "posts.$.comments.$[inner].comment": updatedComment } },
+        { arrayFilters: [ { 'inner._id': ObjectId(commentID) } ],
+          upsert: true }
+     , (error , dbResponse) => {
+         if(error){console.log(error); return res.status(500).send({error: 'Something went wrong, please try again'});}
+         return res.status(200).send({response: updatedComment})
+     })
+
+})
 module.exports = router;

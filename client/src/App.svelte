@@ -11,11 +11,10 @@ const checkIfUserOnline = async ()=>{
 	if(sessionStorage.getItem('token')){
 		let token = sessionStorage.getItem('token')
 		
-		const config = {
-   	 headers: { Authorization: `Bearer ${token}` }
-};
+axios.defaults.headers.common = {'Authorization': `bearer ${token}`}
+		// const config = {headers: { Authorization: `Bearer ${token}` }};
 		try{
-			const response = await axios('http://localhost/user/data', config)
+			const response = await axios('http://localhost/user/data')
 			// console.log(response)
 			user = await response.data.user
 			isLoggedIn = true

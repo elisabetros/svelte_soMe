@@ -35,15 +35,72 @@
        bottom:17%;
        left:calc(45px + 2%);
    }
-   .postText{
+   p{
        padding: 0 2%;
        margin: 1% 0;
+   }
+   .likes, .actions, .comments{
+       margin: 0 2%;
+       padding: 1% 0;
+       border-top: 1px solid #F2F3F5;
+   }
+   .likes{
+       display:grid;
+       grid-template-columns: 1fr 1fr 20fr;
+       justify-content: right;
+       cursor: pointer;
+   }
+   .actions{
+       display: grid;
+       grid-template-columns: 1fr 1fr;
+       justify-content: center;
+       margin:0 20%;
+       cursor: pointer;
+   }
+   .actions div{
+       display: grid;
+       grid-template-columns: 1fr 1fr;   
+       grid-gap: 1%;   
+   }
+   .actions div i{
+       justify-self: end;
+   }
+   i{ 
+       align-self: center;
+   }
+   label{
+       display: grid;
+       grid-template-columns: .1fr 1.5fr .5fr;
+   }
+   input{
+       width:100%;
+       border-radius:25px;
+       margin-bottom: 0;
+       padding-left:20px;
+   }.comments{
+       display: grid;
+       grid-gap: 2%;
+   }
+   .comment{
+       border-radius: 25px;
+       background:#e2e5e8;
+       display: flex;
+       padding:.5%;
+   }
+   .comment p{
+       padding:0 0 0 1%;
+       margin:0;
+       line-height: 28px;
+   }
+   .comment p:first-child{
+       font-weight: bold;
+       color: #009688;
    }
 </style>
 
 <!-- ########################### -->
 
-<div class="post">
+<div class="post" >
     <div class="user">
     <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture">
     {#if isLoggedIn}
@@ -60,30 +117,62 @@
     <div class="likes">
     {#if likes}
         {#each likes as like}
-            <div>
                 <i class="fa fa-thumbs-up"></i>
                 <div class="likeCount">{likeCount()}</div>
-            </div>
         {/each}
     {/if}
     </div>
     <div class="actions">
+    <div><i class="fa fa-thumbs-up"></i> <p>Like this</p></div>
+    <div on:click={()=> showComments=true}> <i class="far fa-comment-alt" ></i> <p>Comment</p></div>
     </div>
-    <div class="comments">
-    </div>
+    {#if showComments}
+        <div class="comments">
+            {#if comments}
+                {#each comments as comment}
+                    <div class="comment">
+                    <p>{comment.firstname} {comment.lastname}</p>
+                    <p>{comment.comment}</p></div>
+                {/each}
+            {/if}
+            <label>
+                <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small">
+                <input type="text" placeholder="Write comment" bind:value={comment}/>
+                <button on:click={()=>handleComment(_id)}>Comment</button>
+            </label>
+        </div>
+    {/if}
 </div>
 
 <!-- ########################### -->
 
 <script>
+import axios from 'axios'
 export let postContent;
 export let likes;
 
 export let postImg;
+export let _id;
 export let name;
 export let isLoggedIn;
 export let profilePicture;
+export let comments; 
+let showComments = false;
+let comment = ""
 
+const handleComment = async (postID) => {
+    if(comment && postID){
+        console.log(comment, postID)
+            const token = sessionStorage.getItem('token')
+           const config = {headers: { Authorization: `Bearer ${token}` }};
+           try{
+               const reponse = await axios.post('http://localhost:80/comment', {postID, comment})
+               console.log(response)
+           }catch(err){
+               if(err){console.log(err.response); return; }
+           }
+    }
+}
 const likeCount = () => {
     let count = 0
     if(likes){
@@ -91,4 +180,7 @@ const likeCount = () => {
     }
     return count
 }
-</script>
+
+
+
+</script> 

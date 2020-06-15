@@ -102,9 +102,14 @@ router.post('/user/login', async (req, res) => {
 
 router.get('/user/data', auth.checkToken, (req, res) => {
     //verify the JWT token generated for the user
-   const authorizedData = req.decoded
+    const userCollection = db.collection('users')
+   const { user } = req.decoded
  if(req.decoded){
-     return res.status(200).send(authorizedData)
+   userCollection.findOne({'_id': ObjectId(user._id)}, (err, dbResponse) => {
+         if(err){console.log(err); return;}
+        //  console.log(dbResponse)
+         return res.status(200).send({user: dbResponse})
+     })
  }
 });
 
