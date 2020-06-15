@@ -10,7 +10,7 @@ $: user = {}
 const checkIfUserOnline = async ()=>{
 	if(sessionStorage.getItem('token')){
 		let token = sessionStorage.getItem('token')
-		isLoggedIn = true
+		
 		const config = {
    	 headers: { Authorization: `Bearer ${token}` }
 };
@@ -18,6 +18,7 @@ const checkIfUserOnline = async ()=>{
 			const response = await axios('http://localhost/user/data', config)
 			// console.log(response)
 			user = await response.data.user
+			isLoggedIn = true
 			console.log(user)
 		}catch(err){
 			if(err){console.log(err.response); return; }

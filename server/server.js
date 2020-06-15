@@ -44,7 +44,8 @@ const allowedOrigins = ['http://localhost:5000','https://www.valsdottir.net', 'h
     }
 }));
 
-app.use('/images',express.static(__dirname + '/pictures/profilePictures'));
+app.use('/userImg',express.static(__dirname + '/pictures/profilePictures'));
+app.use('/postImg',express.static(__dirname + '/pictures/postPictures'));
 
 // ############################
 

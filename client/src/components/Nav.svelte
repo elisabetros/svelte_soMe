@@ -113,8 +113,6 @@ nav div.notification-counter{
 img{
   width:50px;
   height:50px;
-  object-fit: cover;
-  border-radius: 50%;
 }
 
 </style>
@@ -147,7 +145,7 @@ img{
       </div>          
     </div>
     <div class="right">
-    <img src={"http://localhost/images/"+ profilePicture}>
+    <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture"/>
       <div>
         {firstname}      
       </div>
