@@ -26,7 +26,7 @@ app.use(express.json())
 
 // ############################
 
-var cors = require('cors', );
+let cors = require('cors');
 const allowedOrigins = ['http://localhost:5000', 'http://localhost:80' ,'https://www.valsdottir.net', 'https://valsdottir.net'];
 app.use(cors())
 

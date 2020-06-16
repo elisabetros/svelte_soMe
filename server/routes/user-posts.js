@@ -8,11 +8,6 @@ const ObjectId = require('mongodb').ObjectId
 const auth = require('../middleware/checkToken')
 
 
-router.get('/posts', auth.checkToken, async (req, res) => {
-    const { user }  = req.decoded
-    const userCollection = db.collection('users')
-    await userCollection.find
-})
 
 router.post('/post', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
@@ -61,10 +56,10 @@ router.post('/postWithImage', auth.checkToken, (req, res) => {
 })
 
 
-router.put('/post', auth.checkToken, async (req, res) => {
+router.put('/post', auth.checkToken, (req, res) => {
     const userCollection = db.collection('users')
     const { postID, newPostContent } = req.body
-    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$set:{'posts.$.postContent': newPostContent}}, (err, dbResponse) => {
+  userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$set:{'posts.$.postContent': newPostContent}}, (err, dbResponse) => {
         if(err){
             return res.status(500).send({error: err})
         }
@@ -117,7 +112,7 @@ router.post('/comment', auth.checkToken, async (req, res) => {
     if(!postID || !comment){
         return res.status(500).send({error: 'Missing fields'})
     }
-    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.comments':{ _id: new ObjectId(), 'userID': user._id, 'firstname': user.firstname, 'lastname': user.lastname, 'comment': comment }}}, (err, dbResponse) => {
+    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.comments':{ _id: new ObjectId(), 'userID': user._id, 'firstname': user.firstname, 'lastname': user.lastname, 'comment': comment, 'profilePicture': user.profilePicture }}}, (err, dbResponse) => {
         if(err){
             return res.status(500).send({error: err})
         }
@@ -153,6 +148,20 @@ router.put('/updateComment', auth.checkToken, async (req, res) => {
          if(error){console.log(error); return res.status(500).send({error: 'Something went wrong, please try again'});}
          return res.status(200).send({response: updatedComment})
      })
-
 })
+
+router.get('/posts', auth.checkToken, async (req, res) => {
+    const userCollection = db.collection('users')
+    const { user } = req.decoded
+    try{
+        
+        const friends = await userCollection.find({'friends': {$elemMatch: {'friendID': user._id}}}).project({'posts':1, 'firstname':1, 'lastname':1, 'profilePicture': 1, 'isLoggedId':1}).toArray()
+       
+        return res.send({friends})
+
+    }catch(err){
+        if(err){console.log(err);  return res.status(500).send({error: 'Something went wrong, please try again'});}
+    }
+})
+
 module.exports = router;

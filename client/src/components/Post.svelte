@@ -19,11 +19,21 @@
        padding:2% 2% 0;
        display: grid;
        grid-template-columns: .3fr 1fr;
+       grid-template-rows: 1fr 1fr;
        justify-content: left;
        position: relative;
+    width: 40%;     
+   }
+   .post .user p:last-child{ 
+       font-size: 70%
+   }      
+   .post .user p:first-child{       
         font-weight: bold;
-        width: 40%;
-     
+        align-self: end;
+   }
+   .post .user img{
+       grid-row: 1/3;
+       justify-self: center
    }
    .status{
        border:2px solid white;
@@ -71,6 +81,7 @@
    label{
        display: grid;
        grid-template-columns: .1fr 1.5fr .5fr;
+       grid-gap:1%;
    }
    input{
        width:100%;
@@ -90,7 +101,7 @@
    .comment p{
        padding:0 0 0 1%;
        margin:0;
-       line-height: 28px;
+       line-height: 20px;
    }
    .comment p:first-child{
        font-weight: bold;
@@ -107,6 +118,7 @@
         <div class="status"></div>
     {/if}
     <p>{name}</p>
+    <p>{date}</p>
     </div>
     {#if postContent}
         <p class="postText">{postContent}</p>
@@ -123,7 +135,7 @@
     {/if}
     </div>
     <div class="actions">
-    <div><i class="fa fa-thumbs-up"></i> <p>Like this</p></div>
+    <div><i class="far fa-thumbs-up"></i> <p>Like this</p></div>
     <div on:click={()=> showComments=true}> <i class="far fa-comment-alt" ></i> <p>Comment</p></div>
     </div>
     {#if showComments}
@@ -150,7 +162,7 @@
 import axios from 'axios'
 export let postContent;
 export let likes;
-
+export let date;
 export let postImg;
 export let _id;
 export let name;

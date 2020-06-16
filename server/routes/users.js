@@ -13,17 +13,7 @@ let jwt = require('jsonwebtoken');
 const config = require('../config/jwtKey');
 
 
-router.get('/users', async (req, res) => {
-    const collection = db.collection('users')
-    collection.find().toArray((err, result) => {
-        if(err){
-            console.log('error'); 
-            return;
-        }
-        // console.log('OK')         
-        return res.send(result)
-    })
-})
+
 router.post('/user/register', async (req, res) => {
     const userCollection = db.collection('users')
     const { firstname, lastname, email, password, repeatPassword } = req.body
@@ -100,7 +90,7 @@ router.post('/user/login', async (req, res) => {
     })
 })
 
-router.get('/user/data', auth.checkToken, (req, res) => {
+router.get('/user', auth.checkToken, (req, res) => {
     //verify the JWT token generated for the user
     const userCollection = db.collection('users')
    const { user } = req.decoded
@@ -113,23 +103,19 @@ router.get('/user/data', auth.checkToken, (req, res) => {
  }
 });
 
-router.get('/user/profilePicture', auth.checkToken, (req, res) => {
-    const { user } = req.decoded;
-    return res.sendfile(`../pictures/profilePictures/${user.profilePicture}`)
-})
+
 
 
 router.put('/user/logout', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
+    console.log('logout')
     const { user } = req.decoded
     console.log(user._id)
-   
-    await userCollection.findOneAndUpdate({_id: ObjectId(user._id)}, {$set:{isLoggedIn:false}}, (err, dbResponse) => {
-            if(err){console.log(err); return;}
-            // console.log(user)
-            return res.status(200).send({response: dbResponse})
+   userCollection.findOneAndUpdate({_id: ObjectId(user._id)}, {$set:{isLoggedIn:false}}, (err, dbResponse) => {
+            if(err){console.log(err); return res.status(200).send({error: err});}
+            console.log(dbResponse)
+            return res.status(200).send({response: 'success'})
         })
-        console.log(userToLogout )  
 })
 
 router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
@@ -161,7 +147,7 @@ router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
                         return res.status(500).send('Something went wrong, please try again')
                     }
                     const user = dbResponse.value;
-                    jwt.sign({user}, config.secretKey, { expiresIn: '24h' } ,(err, token) => {
+                    jwt.sign({user}, config.secretKey, { expiresIn: '12h' } ,(err, token) => {
                         if(err) {
                         console.log(err) 
                         return res.status(500).send({error: 'Could not create token'})
@@ -182,7 +168,7 @@ router.delete('/user/profilePicture', auth.checkToken, async (req, res) => {
             return res.status(500).send('Something went wrong, please try again')
         }
         console.log(dbResponse)
-        const user = dbResponse.value;
+        delete user.profilePicture
                 jwt.sign({user}, config.secretKey, { expiresIn: '24h' } ,(err, token) => {
                     if(err) {
                       console.log(err) 
@@ -194,6 +180,7 @@ router.delete('/user/profilePicture', auth.checkToken, async (req, res) => {
 })
 
 router.put('/user/update', auth.checkToken, async (req, res) => {
+    console.log('update')
     let { newFirstname, newEmail, newLastname } = req.body
     const { user } = req.decoded
     if(!newFirstname){
@@ -214,8 +201,17 @@ router.put('/user/update', auth.checkToken, async (req, res) => {
                     console.log(err); 
                     return res.status(500).send({error: 'Something went wrong, please try again'})
                 }
-                return res.status(200).send({response: dbResponse})
+                user.firstname = newFirstname
+                user.lastname = newLastname
+                user.email = newEmail
+                jwt.sign({user}, config.secretKey, { expiresIn: '24h' } ,(err, token) => {
+                    if(err) {
+                      console.log(err) 
+                     return res.status(500).send({error: 'Could not create token'})
+                } 
+            return res.send({token, dbResponse})
             })
+        })
 })
 
 router.delete('/user', auth.checkToken, async (req, res) => {
@@ -228,6 +224,66 @@ router.delete('/user', auth.checkToken, async (req, res) => {
         }
         // console.log(user)
         return res.status(200).send({response: dbResponse})
+    })
+})
+
+router.put('/user/friend', auth.checkToken, async (req, res) => {
+    const userCollection = db.collection('users')
+    const { user } = req.decoded
+    const { friendID } = req.body
+    if(!friendID){
+        return res.status(500).send({error: 'Missing ID'})
+    }
+  const friend =  await userCollection.findOne({'_id': ObjectId(friendID)})
+//   return res.send({friend})
+       const bulkUpdateOps = [
+        {
+            "updateOne": {
+                "filter": { "_id":ObjectId(user._id) },
+                "update": { "$push": { "friends": {'friendID': friendID, firstname: friend.firstname, lastname: friend.lastname} } } 
+            }
+        },
+        {
+            "updateOne": {
+                "filter": { "_id": ObjectId(friend._id) },
+                "update": { "$push": { "friends":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname} } }
+            }
+        }
+    ];
+    
+  await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1}, (err, result) => {
+        if(err){console.log(err); return res.status(500).send({error:err});}
+        return res.status(200).send({result})
+    })
+})
+
+router.delete('/user/friend', auth.checkToken, async (req, res) => {
+    const userCollection = db.collection('users')
+    const { user } = req.decoded
+    const { friendID } = req.body
+    if(!friendID){
+        return res.status(500).send({error: 'Missing ID'})
+    }
+  const friend =  await userCollection.findOne({'_id': ObjectId(friendID)})
+//   return res.send({friend})
+       const bulkUpdateOps = [
+        {
+            "updateOne": {
+                "filter": { "_id":ObjectId(user._id) },
+                "update": { "$pull": { "friends": {'friendID': friendID} } } 
+            }
+        },
+        {
+            "updateOne": {
+                "filter": { "_id": ObjectId(friend._id) },
+                "update": { "$pull": { "friends":  {'friendID': user._id} } }
+            }
+        }
+    ];
+    
+  await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1}, (err, result) => {
+        if(err){console.log(err); return res.status(500).send({error:err});}
+        return res.status(200).send({result})
     })
 })
 

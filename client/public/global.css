@@ -2,12 +2,15 @@ html, body {
 	position: relative;
 	width: 100%;
 	height: 100%;
-}
 
+}
+*{	
+	box-sizing: border-box
+}
 body {
 	color: #000;
 	margin: 0;
-	padding: 8px;
+	padding: 0;
 	box-sizing: border-box;
 	background:#e2e5e8;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -33,8 +36,8 @@ label {
 input, button, select, textarea {
 	font-family: inherit;
 	font-size: inherit;
-	padding: 0.4em;
-	margin: 0 0 0.5em 0;
+	padding: 10px;
+	margin: .2em 0 0.5em 0;
 	box-sizing: border-box;
 	border: 1px solid #ccc;
 	border-radius: 2px;
@@ -48,10 +51,14 @@ input[type="range"] {
 	height: 0;
 }
 
-button {
-	color: #333;
-	background-color: #f4f4f4;
-	outline: none;
+button{
+	justify-self: right;
+	background-color: #009688;
+	border:none;
+	text-align:center;
+	color:white;
+	margin:2% auto;
+	display: block;
 }
 
 button:disabled {
@@ -74,11 +81,11 @@ button:focus {
 }
 
 .profilePicture.small{
-	width:50px;
-	height:50px;
+	width:35px;
+	height:35px;
   }
 
   input{
 	  border-radius:5px;
-	  
+
   }

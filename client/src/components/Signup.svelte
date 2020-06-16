@@ -1,37 +1,37 @@
 <style>
     .main{
-        padding-top:20vh;
         display: grid; 
+        grid-template-columns: 1fr 1fr;
         background: rgb(215,219,234);
         background: linear-gradient(4deg, rgba(215,219,234,1) 0%, rgba(251,251,253,1) 100%);
-        height:80vh;
-        width: 100vw;
+        height:100vh;
+        max-height: 100vh;
+        max-width: 100vw;
+        padding: 20vh 10% 0;
+        overflow: hidden;
         align-content: start;
+    }
+    .main div:first-child{
+        border-right: .5px solid white
     }
     label{
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
          padding:1%;
     }
     label>p{
-        text-align: right;
-       padding-right:2%;
+       margin:0;
     }
     input{
         width:300px;
-        padding-bottom: 0;
         margin-bottom: 0;
     }
-    button{
-        justify-self: right;
-        margin-right: 150px;
-        background-color: #009688;
-        color:white;
-    }
+   
     form{
-        justify-self: right;
+        justify-self: center;
         display: grid;
         height:auto;
+        
     }
     .inError{
         font-size: 80%;
@@ -45,12 +45,10 @@
         background:none;
         color:#009688;
         text-decoration: underline;
-        text-align: right;
+        padding:0;
     }
     h1, h2, .loginBtn{
-        text-align: right;
-        padding-right:300px;
-        margin-right:0;
+        margin:1% 0;
     }
 </style>
 
@@ -58,10 +56,11 @@
 
 <div class="main">
     {#if !login}
-
-    <h1>Signup</h1>
-    <h2>It's free!</h2>
-    <button class="loginBtn" on:click="{()=>login=true}" >Already a user? Log in here</button>
+    <div>
+        <h1>Signup</h1>
+        <h2>It's free!</h2>
+        <button class="loginBtn" on:click="{()=>login=true}" >Already a user? Log in here</button>
+    </div>
     <form>
     <label>
         <p>Firstname:</p>
@@ -102,8 +101,10 @@
     </form>
     {/if}
     {#if login}
-    <h1> Log in </h1>
-    <button class="loginBtn" on:click="{()=>login=false}">Not registered? Sign up here</button>
+    <div>
+        <h1> Log in </h1>
+        <button class="loginBtn" on:click="{()=>login=false}">Not registered? Sign up here</button>
+    </div>
     <form>
         <label>
             <p>Email:</p>
@@ -160,10 +161,10 @@ const validateAndLogin = async (event) => {
         errors.loginPassword = "Password must be 8 characters or more"
     }
     if(Object.keys(errors).length === 0){
-    console.log(errors)
+    // console.log(errors)
       try{
        const response = await axios.post('http://localhost:80/user/login', {email:loginEmail, password:loginPassword})
-        // console.log(response.data.token)
+        console.log(response.data.token)
        sessionStorage.setItem('token', response.data.token)
         onLogin(true)
     
@@ -206,8 +207,8 @@ const validateAndSubmit = async (event) => {
         console.log('signup')
       try{
          const reponse = await axios.post('http://localhost:80/user/register', {firstname, lastname, email, password, repeatPassword})
-       console.log(response)
-       login = true
+        console.log(response)
+        login = true
       }catch(err){
           if(err){console.log(err.response); return; }
       }
