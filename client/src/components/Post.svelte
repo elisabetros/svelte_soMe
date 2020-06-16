@@ -64,7 +64,7 @@
        display: grid;
        grid-template-columns: 1fr 1fr;
        justify-content: center;
-       margin:0 20%;
+       padding:1% 20%;
        cursor: pointer;
    }
    .actions div{

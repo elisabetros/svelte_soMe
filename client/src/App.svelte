@@ -1,9 +1,11 @@
 <script>
 import Nav from './components/Nav.svelte'
-import Signup from './components/Signup.svelte'
-import Main from './components/Main.svelte'
-import UpdateProfile from './components/UpdateProfile.svelte'
+import Signup from './pages/Signup.svelte'
+import Main from './pages/Main.svelte'
+import UpdateProfile from './pages/UpdateProfile.svelte'
+import Profile from './pages/Profile.svelte'
 import axios from 'axios'
+  import { Router, Route, Link } from "svelte-routing";
 $: isLoggedIn= false
 $: user = {}
 $: update = false;
@@ -49,15 +51,23 @@ const handleUpdate = (data) => {
 	update = data
 }
 // console.log(user)
+export let url = "";
 </script>
-
+<Router url="{url}">
 	{#if isLoggedIn}
 		<Nav {...user} onLogout={handleLogout} onUpdate={handleUpdate}/>
-		{#if update}
-			<UpdateProfile {...user} onUpdate={handleUpdate}/>
-		{:else}
+	 <Route path="/updateprofile">
+			<UpdateProfile {...user}/>
+	 </Route> 
+	 <Route path="/">
 			<Main {...user}/>
-		{/if}	
+	 </Route> 
+	 <Route path="/profile/:id">
+			<Profile {...user}/>
+	 </Route> 
+
 	{:else}
 		<Signup  onLogin={handleLogin}/>
 	{/if}
+
+	</Router>

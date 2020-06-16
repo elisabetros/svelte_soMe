@@ -2,7 +2,7 @@
 nav{
   display: grid;
   grid-template-columns: 25fr 25fr 10fr;
-  grid-gap: 6em;
+  grid-gap: 5em;
 
   position: fixed;
   top: 0px;
@@ -57,10 +57,12 @@ input{
   align-items: center;
   font-size: 80%;
 }
-.middle > div{
-  display: grid;
+.username{
+  grid-gap: 5%;
   grid-template-columns: 1fr 3fr;
-  /* justify-items: center; */
+}
+.middle > div, .username{
+  display: grid;
   align-items: center;
   position: relative;
   width: 100%;
@@ -69,7 +71,7 @@ input{
   border-right:.5px solid rgba(250, 250, 250, 0.3);
   cursor: pointer;
 }
-.middle div:last-child{
+.middle>div:last-child{
   grid-template-columns: 1fr;
   justify-items: center;
 }
@@ -169,14 +171,16 @@ input{
 </style>
 
 <!-- ########################### -->
-
+<Router url="{url}">
  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<nav>
 
     <div class="left">
-      <div class="logo">
-        <i class="fas fa-utensil-spoon"></i> Clonebook
-      </div>
+      <Link to="/">
+        <div class="logo">
+          <i class="fas fa-utensil-spoon"></i> Clonebook
+        </div>
+      </Link>
       <div>
         <form>
           <div class="green">
@@ -188,12 +192,14 @@ input{
     </div>
 
     <div class="middle">
+    <Link to={"/profile/"+_id}>
       <div class="username" on:click={showProfile}>
         <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
         <p>{firstname}</p>    
       </div>
+    </Link>
       <div on:click={showMain}>
-        <p>Home</p>
+        <Link to="/">Home</Link>
       </div>
               
     </div>
@@ -211,23 +217,26 @@ input{
       </div>  
       <div class="dropDown hidden">
           <p on:click={handleLogout}>Log out</p>
-          <p on:click={handleUpdate}>Update Information</p>
+          <Link to="/updateprofile">Update Information</Link>
       </div>                
     </div>
 
   </nav>
-
+</Router>
 <!-- ########################### -->
 
 <script>
-
+  
+import { Router, Route, Link } from "svelte-routing";
 import axios from 'axios'
 
+export let url = "";
 export let firstname;
 export let lastname;
 export let profilePicture;
 export let onLogout;
 export let onUpdate;
+export let _id
 
 const showDropDown = () => {
  console.log('drop down')
