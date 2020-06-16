@@ -56,7 +56,8 @@ router.post('/postWithImage', auth.checkToken, (req, res) => {
 })
 
 
-router.put('/post', auth.checkToken, (req, res) => {
+router.put('/updatePost', auth.checkToken, (req, res) => {
+    console.log('edit post')
     const userCollection = db.collection('users')
     const { postID, newPostContent } = req.body
   userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$set:{'posts.$.postContent': newPostContent}}, (err, dbResponse) => {
@@ -64,6 +65,39 @@ router.put('/post', auth.checkToken, (req, res) => {
             return res.status(500).send({error: err})
         }
         return res.status(200).send({dbResponse})
+    })
+})
+router.put('/updatePostWithImage', auth.checkToken, (req, res) => {
+    console.log('edit post with image')
+    const userCollection = db.collection('users')
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        console.log('parse form')
+        if(err){return res.send({error:"error in file"})}
+        if(!fields.postID ){
+            return res.send({error: 'missing ID'})
+        }
+        detect.fromFile(files.newPostImg.path, (err, result) => {
+            console.log(result.ext)
+            const pictureName = uuidv1()+"."+result.ext
+            const allowedImageTypes = ["jpg", "jpeg", "png", "gif"]
+            if(!allowedImageTypes.includes(result.ext)){
+                return res.send({error:"image not allowed"})
+            }
+            const oldPath = files.newPostImg.path
+            const newPath = path.join(__dirname,"..", "pictures", "postPictures", pictureName)
+            fs.rename(oldPath, newPath, async err => {
+                if(err){console.log("cannot move file"); return res.send({error: err});}
+            
+                console.log(pictureName)
+            userCollection.findOneAndUpdate({_id:ObjectId(user._id)}, {'posts._id': ObjectId(fields.postID)}, {$set:{'posts.$.postContent': fields.newPostContent, 'posts.$.postImg': pictureName}}, (err, dbResponse) => {
+                if(err){
+                    return res.send({error: err})
+                }
+                return res.send({dbresponse})
+            })
+            })
+        })
     })
 })
 

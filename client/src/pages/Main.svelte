@@ -10,83 +10,25 @@
     margin:10vh auto 0;
     background: white;
     border-radius: 5px;
-  
-}
-.addPost input[type=text] {
-    grid-column: 1/-1;
-    width:100%;
-    height:10vh;
-    border:none;
-    padding-left:10%;
-    border-bottom: 1px solid #eee;
-    border-radius: none;
-}
-form button{
-    width: 10vw;
-    margin:0;
-    background:none;
-    color:#009688;
-    justify-self: right;
-    text-decoration: underline;
 }
 
-.profilePicture{
-    position: absolute;
-    top:20%;
-    left:2%;
-}
-input[type=file]{
-   	width: 0.1px;
-	height: 0.1px;
-	opacity: 0;
-	overflow: hidden;
-	position: absolute;
-	z-index: -1;
-}
-form{
-    display: grid;
-    grid-template-columns: .1fr 1fr;
-    position: relative;
-    grid-gap: 2%;
-}
-.customLabel{
-    border:none;
-    border-radius: 25px;
-    background-color:#e2e5e8;
-    align-items: center;
-    font-weight: bold;
-    font-size: 80%;
-    padding: 5%;
-    height: 32px;
-   display: grid;
-   grid-template-columns: 1fr 3fr;
-   align-items: start;
-   align-content: center;
-    width:120px;
-    margin:0 5% 5%;
-    cursor: pointer;
-}
-.customLabel i{
-    font-size: 170% !important;
-    color: #009688;
-}
 </style>
 
 <!-- ########################### -->
 <div class="addPost">
-    <form enctype='multipart/form-data'>
+    <form enctype='multipart/form-data' class="frmPost">
     <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
-    <input type="text" placeholder={"What's on your mind, "+ firstname + '?'} name="post" bind:value={post}>
+    <textarea type="text" placeholder={"What's on your mind, "+ firstname + '?'} name="post" bind:value={post}/>
     <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
     <button on:click={handlePost}>Post</button>
     </form>
     </div>
 <div class="posts">
 {#each allPosts as post}
-    <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} profilePicture={post.profilePicture} date={post.date}/>
+    <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>
 
 {/each}
-
+{console.log(allPosts)}
 </div>
 
 <!-- ########################### -->
@@ -100,6 +42,7 @@ export let firstname;
 export let lastname;
 export let isLoggedIn;
 export let profilePicture;
+export let _id;
 let post = ""
 let picture;
 let allPosts = [];
@@ -118,8 +61,7 @@ const convertUserPosts = () => {
 let aPosts = Array.from(posts)
     aPosts.forEach(post => {
         const date =  dateFromObjectId(post._id)
-         allPosts = [...allPosts, {...post, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date  } ]
-         
+         allPosts = [...allPosts, {...post, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true  } ]
     })
 }
 const fetchAllFriendPosts = async () => {
@@ -132,7 +74,7 @@ const fetchAllFriendPosts = async () => {
                     const date = dateFromObjectId(post._id)
                     console.log(date)
                         console.log(friend.profilePicture)
-                        allPosts = [...allPosts, {...post, 'name': friend.firstname + ' '+friend.lastname, 'profilePicture': friend.profilePicture, date  } ]
+                        allPosts = [...allPosts, {...post, 'name': friend.firstname + ' '+friend.lastname, 'profilePicture': friend.profilePicture, date, 'isUsers':false  } ]
                 
                 })
             }
@@ -147,11 +89,11 @@ const handlePost = async (event) => {
     if(post || picture){
         console.log(post)
         
-        console.log(picture[0])
+        // console.log(picture[0])
         // return;
         if(!picture){
             try{
-                const response= await axios.post('http://localhost/post', post)
+                const response= await axios.post('http://localhost/post', {post})
                 console.log(response.data)
             }catch(err){
                 if(err){console.log(err.response); return; }
