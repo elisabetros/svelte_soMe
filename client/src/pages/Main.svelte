@@ -62,6 +62,7 @@ let aPosts = Array.from(posts)
     aPosts.forEach(post => {
         const date =  dateFromObjectId(post._id)
          allPosts = [...allPosts, {...post, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true  } ]
+         
     })
 }
 const fetchAllFriendPosts = async () => {

@@ -24,6 +24,9 @@
        position: relative;
     /* width: 40%;      */
    }
+   .post p{
+       grid-column: 2
+   }
    .post .user p:nth-child(3){ 
        font-size: 70%
    }      
@@ -186,7 +189,8 @@
         </div>
     {/if}
 
-    <div class="model hidden">
+   {#if editModel}
+     <div class="model">
         <div class="modelContent">
         <span class="close" on:click={showEditModel}>X</span>
              <form enctype='multipart/form-data' class="frmPost">
@@ -198,6 +202,7 @@
             </form>
         </div>
     </div>
+   {/if}
 </div>
 
 <!-- ########################### -->
@@ -214,12 +219,14 @@ export let isLoggedIn;
 export let profilePicture;
 export let comments; 
 export let isUsers
+let editModel = false
 let values = {newPostContent: postContent, newPostImg: postImg}
 let showComments = false;
 let comment = ""
 
 const showEditModel = async () => {
-    document.querySelector('.model').classList.toggle('hidden')
+    !editModel? editModel=true: editModel=false
+    console.log(editModel)
 }
 const handleChange = (event) => {
     if(event.target.name === 'picture'){
@@ -236,8 +243,13 @@ const handleEdit = async (event) => {
         if(values.newPostImg !== undefined){
             console.log('with image')
             try{
-                const response = await axios.put('http://localhost/updatePostWithImage', {'postID': _id,'newPostContent': values.newPostContent, 'newPostImg': values.newPostImg[0]})
+                let formData = new FormData
+            formData.set('postID', _id);
+            formData.set('newPostContent', values.newPostContent);
+            formData.set('newPostImg', values.newPostImg[0]);
+                const response = await axios.put('http://localhost/updatePostWithImage', formData)
                 console.log(response.data)
+                editModel=false
             }catch(err){
                 if(err){console.log(err.response); return; }
             }
@@ -245,6 +257,7 @@ const handleEdit = async (event) => {
             try{
                 const response = await axios.put('http://localhost/updatePost', {'postID': _id, 'newPostContent': values.newPostContent})
                 console.log(response.data)
+                editModel=false
             }catch(err){
                 if(err){console.log(err.response); return; }
             }
