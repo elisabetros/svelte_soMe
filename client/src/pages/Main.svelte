@@ -74,10 +74,10 @@ form{
 
 <!-- ########################### -->
 <div class="addPost">
-    <form>
+    <form enctype='multipart/form-data'>
     <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
-    <input type="text" placeholder={"What's on your mind, "+ firstname + '?'}>
-    <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file"></label>
+    <input type="text" placeholder={"What's on your mind, "+ firstname + '?'} name="post" bind:value={post}>
+    <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
     <button on:click={handlePost}>Post</button>
     </form>
     </div>
@@ -100,9 +100,19 @@ export let firstname;
 export let lastname;
 export let isLoggedIn;
 export let profilePicture;
-let newPost = ""
-
+let post = ""
+let picture;
 let allPosts = [];
+
+const handleChange = (event) => {
+    picture = event.target.files
+    console.log(event.target.files)
+    if(event.target.name === 'picture'){
+        let fileName= event.target.value.split("\\").pop();
+        
+        document.querySelector('.customLabel').innerHTML ="<span></span>"+ fileName;
+    }
+}
 
 const convertUserPosts = () => {
 let aPosts = Array.from(posts)
@@ -132,8 +142,35 @@ const fetchAllFriendPosts = async () => {
         if(err){console.log(err.response); return; }
     }
 }
-const handlePost = (event) => {
+const handlePost = async (event) => {
     event.preventDefault()
+    if(post || picture){
+        console.log(post)
+        
+        console.log(picture[0])
+        // return;
+        if(!picture){
+            try{
+                const response= await axios.post('http://localhost/post', post)
+                console.log(response.data)
+            }catch(err){
+                if(err){console.log(err.response); return; }
+            }
+        }else{
+            let formData = new FormData
+            formData.set('post', post);
+            formData.set('picture', picture[0]);
+              try{
+                const response= await axios.post('http://localhost/postWithImage', formData,{ headers: {
+       'content-type': 'multipart/form-data' // do not forget this 
+      }})
+                console.log(response.data)
+            }catch(err){
+                if(err){console.log(err.response); return; }
+            }
+        }
+    }
+
 }
 const orderPosts = () =>{
     let sortedPosts = allPosts.sort((a,b) => {

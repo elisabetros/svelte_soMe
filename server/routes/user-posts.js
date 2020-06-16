@@ -44,7 +44,7 @@ router.post('/postWithImage', auth.checkToken, (req, res) => {
             fs.rename(oldPath, newPath, async err => {
                 if(err){console.log("cannot move file"); return;}
             
-            userCollection.findOneAndUpdate({_id:ObjectId(user._id)}, {$push:{'posts': {_id: new ObjectId(), 'postContent':fields.postContent, 'postImg': pictureName}}}, (err, dbresponse) => {
+            userCollection.findOneAndUpdate({_id:ObjectId(user._id)}, {$push:{'posts': {_id: new ObjectId(), 'postContent':fields.post, 'postImg': pictureName}}}, (err, dbresponse) => {
                 if(err){
                     return res.send({err})
                 }
