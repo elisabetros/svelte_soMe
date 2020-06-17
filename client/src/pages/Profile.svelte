@@ -13,6 +13,7 @@
         grid-template-columns: 2.5fr 4fr 2fr;
         align-content: end;
         position: relative;
+        z-index: 1;
     }
     .coverImg img{
         position: absolute;
@@ -39,6 +40,19 @@
         margin:0;
         text-align: center;
     }
+    .addPost{
+        z-index: 0;
+        width: 55vw;
+        margin:3vh auto 0;
+        background: white;
+        border-radius: 5px;
+    }
+    .posts{
+        display: grid;
+        margin:3vh auto 0;
+        justify-content: center;
+        grid-gap: 2%;
+    }
 </style>
 
 <!-- ########################### -->
@@ -51,35 +65,65 @@
             <div class="btnUpdate"><Link to="/updateprofile"><p>Update Information</p></Link></div>
         {/if}
     </div>
+    {#if isUsers}
+        <div class="addPost">
+            <form enctype='multipart/form-data' class="frmPost">
+            <img src={"http://localhost/userImg/"+ user.profilePicture} class="profilePicture small"/>
+            <textarea type="text" placeholder={"What's on your mind, "+ user.firstname + '?'} name="post" on:change={handleChange}/>
+            <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
+            <button on:click={handlePost}>Post</button>
+            </form>
+        </div>
+    {/if}
+    <div class="posts">
+        {#if user.posts}
+            {#each user.posts as post}
+                 <Post {...post} name={user.firstname + user.lastname} isLoggedIn={user.isLoggedIn} userID={post.userID} profilePicture={user.profilePicture} date={post.date} isUsers={isUsers}/>
+            {/each}
+        {/if}
+    </div>
 
 </div>
-
 <!-- ########################### -->
 
 <script>
     import axios from 'axios'
     import { Link } from "svelte-routing";
+    import Post from '../components/Post.svelte'
 
-    // export let firstname;
-    // export let lastname;
     export let _id;
-    // export let email;
-    // export let profilePicture;
-    // export let coverPicture;
     export let userID;
+
     let user = {}
     let isUsers = false;
+    let values = {}
 
+    const handleChange = () => {
 
-        const fetchUser = async () => {
-            const response = await axios(`http://localhost/user/${userID}`)
-            console.log(response.data.user)
-            user= await response.data.user
-            if(!user.coverPicture){
-                user.coverPicture = 'standard.jpg'
-            }
+    }
+    const handlePost = () => {
+
+    }
+    const fetchUser = async () => {
+        const response = await axios(`http://localhost/user/${userID}`)
+        console.log(response.data.user)
+        user= await response.data.user
+        if(!user.coverPicture){
+            user.coverPicture = 'standard.jpg'
         }
-
+        convertUserPosts()
+    }
+    const convertUserPosts = () => {
+        user.posts.forEach(post => {
+            const date =  dateFromObjectId(post._id)
+            post.date = date
+        })
+    }
+    const dateFromObjectId = function (objectId) {
+        let date = new Date(parseInt(objectId.substring(0, 8), 16) * 1000);
+        date = date.toDateString()
+        return date
+    };
     if(_id === userID){
         isUsers = true;
     }
