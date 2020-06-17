@@ -3,6 +3,8 @@ import Nav from './components/Nav.svelte'
 import Signup from './pages/Signup.svelte'
 import Main from './pages/Main.svelte'
 import UpdateProfile from './pages/UpdateProfile.svelte'
+import Contacts from './components/Contacts.svelte'
+import Left from './components/Left.svelte'
 import Profile from './pages/Profile.svelte'
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
@@ -21,6 +23,9 @@ const checkIfUserOnline = async ()=>{
 			const response = await axios('http://localhost/user')
 			// console.log(response)
 			user = await response.data.user
+			if(!user.profilePicture){
+  				user.profilePicture = 'standard.png'
+			}		
 			isLoggedIn = true
 			console.log(user)
 		}catch(err){
@@ -65,10 +70,11 @@ const handleUpdate = (data) => {
 	 <Route path="/">
 			<Main {...user}/>
 	 </Route> 
-	 <Route path="/profile/:id">
-			<Profile {...user}/>
+	 <Route path="/profile/:id" let:params>
+			<Profile {...user} userID={params.id}/>
 	 </Route> 
-
+	<Contacts {...user} />
+	<Left {...user} />
 	{:else}
 		<Signup  onLogin={handleLogin}/>
 	{/if}

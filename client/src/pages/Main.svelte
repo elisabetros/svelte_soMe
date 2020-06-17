@@ -6,7 +6,7 @@
     grid-gap: 2%;
 }
 .addPost{
-    width: 60vw;
+    width: 55vw;
     margin:10vh auto 0;
     background: white;
     border-radius: 5px;
@@ -25,10 +25,9 @@
     </div>
 <div class="posts">
 {#each allPosts as post}
-    <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} userID={_id} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>
+    <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} userID={post.userID} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>
 
 {/each}
-{console.log(allPosts)}
 </div>
 
 <!-- ########################### -->
@@ -61,7 +60,7 @@ const convertUserPosts = () => {
 let aPosts = Array.from(posts)
     aPosts.forEach(post => {
         const date =  dateFromObjectId(post._id)
-         allPosts = [...allPosts, {...post, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true  } ]
+         allPosts = [...allPosts, {...post,'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true  } ]
          
     })
 }
@@ -75,7 +74,7 @@ const fetchAllFriendPosts = async () => {
                     const date = dateFromObjectId(post._id)
                     console.log(date)
                         console.log(friend.profilePicture)
-                        allPosts = [...allPosts, {...post, 'name': friend.firstname + ' '+friend.lastname, 'profilePicture': friend.profilePicture, date, 'isUsers':false  } ]
+                        allPosts = [...allPosts, {...post,'userID': friend._id, 'name': friend.firstname + ' '+friend.lastname, 'profilePicture': friend.profilePicture, date, 'isUsers':false  } ]
                 
                 })
             }

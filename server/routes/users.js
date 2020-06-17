@@ -12,7 +12,17 @@ const fs = require("fs") //part of node.js
 let jwt = require('jsonwebtoken');
 const config = require('../config/jwtKey');
 
-
+router.get('/user/:id', async (req, res) => {
+    const userCollection = db.collection('users')
+    const { id } = req.params
+    try{
+        const user = await userCollection.findOne({_id: ObjectId(id)})
+        return res.status(200).send({user})
+    }catch(err){
+        if(err){
+            return res.status(500).send({error: err}) }
+    }
+})
 
 router.post('/user/register', async (req, res) => {
     const userCollection = db.collection('users')
@@ -142,15 +152,15 @@ router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
             // console.log(pictureName) // ed671140-69ea-11ea-9ec7-9ff298c14d8c.jpg
             const allowedImageTypes = ["jpg", "jpeg", "png"]
             if(! allowedImageTypes.includes(result.ext)){
-                return res.send("image not allowed")
+                return res.status(500).send({error:"Only image files allowed"})
             }
             const oldPath = files.picture.path
             const newPath = path.join(__dirname,"..", "pictures", "profilePictures", pictureName)
             fs.rename(oldPath, newPath, async err => {
-                if(err){console.log("cannot move file"); return;}
+                if(err){console.log("cannot move file"); return res.status(500).send({error:"Cannot move file"});}
                 userCollection.findOneAndUpdate({_id:ObjectId(user._id)}, {$set:{'profilePicture': pictureName}}, (err, dbResponse) => {
                     if(err){
-                        return res.status(500).send('Something went wrong, please try again')
+                        return res.status(500).send({error:'Something went wrong, please try again'})
                     }
                     const user = dbResponse.value;
                     jwt.sign({user}, config.secretKey, { expiresIn: '12h' } ,(err, token) => {
@@ -293,6 +303,45 @@ router.delete('/user/friend', auth.checkToken, async (req, res) => {
     })
 })
 
+router.post('/user/coverImg', auth.checkToken, (req, res) => {
+    const userCollection = db.collection('users')
+    const { user } = req.decoded
+    const form = new formidable.IncomingForm()
+    form.parse(req, (err, fields, files) => {
+        if(err){return res.send("error in file")}
+        
+        if(!files.picture){
+            return res.status(500).send({error: 'Image missing'})
+        }
+        detect.fromFile(files.picture.path, (err, result) => {
+            const pictureName = uuidv1()+"."+result.ext
+            // console.log(pictureName) // ed671140-69ea-11ea-9ec7-9ff298c14d8c.jpg
+            const allowedImageTypes = ["jpg", "jpeg", "png"]
+            if(! allowedImageTypes.includes(result.ext)){
+                return res.status(500).send({error:"Only image files allowed"})
+            }
+            const oldPath = files.picture.path
+            const newPath = path.join(__dirname,"..", "pictures", "coverPictures", pictureName)
+            fs.rename(oldPath, newPath, async err => {
+                if(err){console.log("cannot move file"); return;}
+                userCollection.findOneAndUpdate({_id:ObjectId(user._id)}, {$set:{'coverPicture': pictureName}}, (err, dbResponse) => {
+                    if(err){
+                        return res.status(500).send({error:'Something went wrong, please try again'})
+                    }
+                    
+                    // jwt.sign({user}, config.secretKey, { expiresIn: '12h' } ,(err, token) => {
+                    //     if(err) {
+                    //     console.log(err) 
+                    //     return res.status(500).send({error: 'Could not create token'})
+                    //     } 
+                    //     return res.send({token, dbResponse})
+                    // })
+                    return res.status(200).send({response: 'Success'})
+                })
+            })
+        })
+    })
+})
 
 
 module.exports = router;

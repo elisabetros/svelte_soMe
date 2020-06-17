@@ -47,6 +47,7 @@ app.use(cors())
 
 app.use('/userImg',express.static(__dirname + '/pictures/profilePictures'));
 app.use('/postImg',express.static(__dirname + '/pictures/postPictures'));
+app.use('/coverImg',express.static(__dirname + '/pictures/coverPictures'));
 
 // ############################
 

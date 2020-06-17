@@ -231,7 +231,7 @@ input{
 
 <script>
   
-import { Router, Route, Link } from "svelte-routing";
+import { Router, Link } from "svelte-routing";
 import axios from 'axios'
 
 export let url = "";
@@ -261,4 +261,5 @@ const showProfile = () => {
 const showMain = () => {
   onUpdate(false)
 }
+
 </script>

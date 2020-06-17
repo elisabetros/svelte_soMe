@@ -3,7 +3,7 @@
         width:50%;
         display: block;
         margin:auto;
-        width:60vw;
+        width:55vw;
         height:40vw;
         object-fit: cover;
     }
@@ -12,7 +12,7 @@
         background:white;
         justify-self: center;
         justify-content: center;
-        width:60vw;
+        width:55vw;
         border-radius: 5px;
     }
    .post .user{
@@ -144,12 +144,14 @@
 
 <div class="post" >
     <div class="user">
-        <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture">
-        {#if isLoggedIn}
-            <div class="status"></div>
-        {/if}
-        <p>{name}</p>
-        <p>{date}</p>
+            <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture" alt="user image">
+            {#if isLoggedIn}
+                <div class="status"></div>
+            {/if}
+        <Link to={"/profile/"+userID}>
+            <p>{name}</p>
+        </Link>
+            <p>{date}</p>
         {#if isUsers}
             <div class="editPost" on:click={showEditModel}>...</div>
         {/if}
@@ -213,6 +215,8 @@
 <script>
 
 import axios from 'axios'
+ import { Link } from "svelte-routing";
+
 export let postContent;
 export let likes;
 export let date;
