@@ -51,10 +51,10 @@ app.use('/postImg',express.static(__dirname + '/pictures/postPictures'));
 // ############################
 
 const userRoute = require('./routes/users')
-const userPostRoute = require('./routes/user-posts')
+const postRoute = require('./routes/posts')
 
 app.use(userRoute)
-app.use(userPostRoute)
+app.use(postRoute)
 
 // ############################
 

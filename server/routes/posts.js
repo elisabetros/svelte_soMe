@@ -109,7 +109,7 @@ router.delete('/post', auth.checkToken, async (req, res) => {
         if(err){
             return res.status(500).send({error: err})
         }
-        return res.status(200).send({dbResponse})
+        return res.status(200).send({response: 'Post deleted'})
     })
 })
 
@@ -117,24 +117,50 @@ router.post('/likePost', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const { postID } = req.body
     const { user } = req.decoded
-    userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.likes':{'userID': user._id,  'firstname': user.firstname, 'lastname': user.lastname }}}, (err, dbResponse) => {
+    let error;
+    try{
+        const alreadyLiked = await userCollection.find({'posts._id': ObjectId(postID)}, {'userID': user._id}).project({'posts.likes':1, 'posts._id':1, 'posts.postContent':1 }).toArray()
+       alreadyLiked[0].posts.map(post => {
+            if(post._id.toString() === postID){
+                if(post.hasOwnProperty('likes')){
+                    post.likes.map(like => {
+                        if(like.userID === user._id){
+                            return res.status(500).send({error: 'Already liked by you'})
+                        }                
+                    })         
+                }
+            }
+        })        
+    }catch(err){
+        if(err){console.log(err); 
+        return res.status(500).send({error: err}) }
+    }   
+    try{            
+        const like = await userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.likes':{'userID': user._id,  'firstname': user.firstname, 'lastname': user.lastname }}})
+        return res.status(200).send({response: 'Post liked'})
+    }catch(err){
         if(err){
-            return res.status(500).send({error: err})
+            console.log(error); 
+            return res.status(500).send({error: err}) 
         }
-        return res.status(200).send({dbResponse})
-    })
+    } 
 })
 
 router.delete('/likePost', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const { postID } = req.body
     const { user } = req.decoded
-//   see if user already liked post
+    if(!postID){
+        return res.status(500).send({error: 'Missing ID'})
+    }
+    // console.log(postID, user._id)
     userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$pull:{'posts.$.likes':{ 'userID': user._id, 'firstname': user.firstname, 'lastname': user.lastname }}}, (err, dbResponse) => {
         if(err){
             return res.status(500).send({error: err})
+        }else{
+            return res.status(200).send({response: 'Post unliked'})
+
         }
-        return res.status(200).send({dbResponse})
     })
 })
 

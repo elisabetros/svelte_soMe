@@ -5,11 +5,13 @@ import Main from './pages/Main.svelte'
 import UpdateProfile from './pages/UpdateProfile.svelte'
 import Profile from './pages/Profile.svelte'
 import axios from 'axios'
-  import { Router, Route, Link } from "svelte-routing";
+import { Router, Route, Link } from "svelte-routing";
+
 $: isLoggedIn= false
 $: user = {}
 $: update = false;
 
+export let url = "";
 
 const checkIfUserOnline = async ()=>{
 	if(sessionStorage.getItem('token')){
@@ -51,8 +53,9 @@ const handleUpdate = (data) => {
 	update = data
 }
 // console.log(user)
-export let url = "";
+
 </script>
+
 <Router url="{url}">
 	{#if isLoggedIn}
 		<Nav {...user} onLogout={handleLogout} onUpdate={handleUpdate}/>

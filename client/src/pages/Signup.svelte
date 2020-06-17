@@ -50,6 +50,11 @@
     h1, h2, .loginBtn{
         margin:1% 0;
     }
+    .frmFail{
+        text-align: center;
+        font-size: 90%;
+        grid-column: 1/-1;
+    }
 </style>
 
 <!-- ########################### -->
@@ -62,6 +67,9 @@
         <button class="loginBtn" on:click="{()=>login=true}" >Already a user? Log in here</button>
     </div>
     <form>
+     {#if errors.signupGlobal}
+            <p class="inError frmFail">{errors.signupGlobal}</p>
+        {/if}
     <label>
         <p>Firstname:</p>
         <input type="text" name="firstname" bind:value={firstname}/>
@@ -97,8 +105,9 @@
         <p class="inError">{errors.repeatPassword}</p>
         {/if}
     </label>
-    <button on:click={validateAndSubmit}>Sign Up</button>
+    <button on:click={validateAndSubmit}>{#if isLoading}...loading{:else}Sign Up {/if}</button>
     </form>
+    
     {/if}
     {#if login}
     <div>
@@ -106,6 +115,9 @@
         <button class="loginBtn" on:click="{()=>login=false}">Not registered? Sign up here</button>
     </div>
     <form>
+    {#if errors.loginGlobal}
+            <p class="inError frmFail">{errors.loginGlobal}</p>
+        {/if}
         <label>
             <p>Email:</p>
             <input type="text" name="email" bind:value={loginEmail}/>
@@ -120,8 +132,9 @@
             <p class="inError">{errors.loginPassword}</p>
             {/if}
         </label>        
-        <button on:click={validateAndLogin}>Log In</button>
+        <button on:click={validateAndLogin}>{#if isLoading}...loading{:else}Log In{/if}</button>
     </form>
+    
     {/if}
 </div>
 
@@ -138,6 +151,7 @@ let repeatPassword = ""
 let loginEmail = ""
 let loginPassword = ""
 let errors = {}
+let isLoading = false
 export let onLogin
 
 const handleClick = () => {
@@ -161,15 +175,20 @@ const validateAndLogin = async (event) => {
         errors.loginPassword = "Password must be 8 characters or more"
     }
     if(Object.keys(errors).length === 0){
+        isLoading = true;
     // console.log(errors)
       try{
-       const response = await axios.post('http://localhost:80/user/login', {email:loginEmail, password:loginPassword})
+        const response = await axios.post('http://localhost:80/user/login', {email:loginEmail, password:loginPassword})
         console.log(response.data.token)
-       sessionStorage.setItem('token', response.data.token)
+        sessionStorage.setItem('token', response.data.token)
         onLogin(true)
-    
+        isLoading = false;
       }catch(err){
-          if(err){console.log(err); return; }
+          if(err){
+            console.log(err.response.data); 
+            isLoading = false;
+            errors.loginGlobal = err.response.data.error
+          }
       }
     }    
 }
@@ -204,13 +223,19 @@ const validateAndSubmit = async (event) => {
     }
     console.log(errors)
     if(Object.keys(errors).length === 0){
-        console.log('signup')
+          isLoading = true;
+            console.log('signup')
       try{
-         const reponse = await axios.post('http://localhost:80/user/register', {firstname, lastname, email, password, repeatPassword})
+        const reponse = await axios.post('http://localhost:80/user/register', {firstname, lastname, email, password, repeatPassword})
         console.log(response)
         login = true
+        isLoading = false;
       }catch(err){
-          if(err){console.log(err.response); return; }
+          if(err){
+            console.log(err.response.data);
+            isLoading = false;
+            errors.signupGlobal = err.response.data.error
+        }
       }
         
     }

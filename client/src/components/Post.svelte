@@ -161,15 +161,18 @@
            <img  class="postImg" src={"http://localhost/postImg/"+ postImg}>
     {/if}
     <div class="likes">
-    {#if likes}
-        {#each likes as like}
-                <i class="fa fa-thumbs-up"></i>
-                <div class="likeCount">{likeCount()}</div>
-        {/each}
+    {#if likes.length}
+        <i class="fa fa-thumbs-up"></i> 
+        <div class="likeCount">{likeCount()}</div>       
     {/if}
     </div>
     <div class="actions">
-    <div><i class="far fa-thumbs-up"></i> <p>Like this</p></div>
+    
+        {#if like}
+           <div on:click={handleLike}><i class="fas fa-thumbs-up"></i> <p><strong>Like this</strong></p></div>
+        {:else}
+            <div on:click={handleLike}><i class="far fa-thumbs-up"></i> <p>Like this</p></div>
+        {/if}
     <div on:click={()=> showComments=true}> <i class="far fa-comment-alt" ></i> <p>Comment</p></div>
     </div>
     {#if showComments}
@@ -208,6 +211,7 @@
 <!-- ########################### -->
 
 <script>
+
 import axios from 'axios'
 export let postContent;
 export let likes;
@@ -219,10 +223,57 @@ export let isLoggedIn;
 export let profilePicture;
 export let comments; 
 export let isUsers
+export let userID;
 let editModel = false
 let values = {newPostContent: postContent, newPostImg: postImg}
 let showComments = false;
 let comment = ""
+let like = false
+$: count = ""
+
+const checkIfLiked = () => {
+    if(likes){
+       const found = likes.find(like => like.userID === userID)
+       if(found){
+           like = true;
+       }
+    }
+}
+
+const handleLike = async () => {
+    if(!like){
+        try{            
+            const response = await axios.post('http://localhost/likePost', {'postID': _id})
+            console.log(response.data)
+            like= true
+            let names = name.split(' ')
+            console.log(names)
+            if(names.lengt > 2){
+                likes.push({ userID, firstname: names[0]+names[1], lastname:names[3] })
+            }else{
+                likes.push({userID, firstname: names[0], lastname: names[1]})
+            }
+        }catch(err){
+            if(err){console.log(err.response.data.error); return; }
+        }
+    }else{
+          try{            
+              console.log(_id)
+            const response = await axios.delete('http://localhost/likePost', {data:{'postID': _id}})
+            console.log(response.data)
+            like= false
+            console.log(likes)
+            let newLikes = likes.filter(like =>{
+                if(like.userID !== userID){
+                    return like
+                }
+            })
+            likes = newLikes
+        }catch(err){
+            if(err){console.log(err.response.data.error); return; }
+        }
+    }
+}
 
 const showEditModel = async () => {
     !editModel? editModel=true: editModel=false
@@ -278,14 +329,16 @@ const handleComment = async (postID) => {
            }
     }
 }
+
 const likeCount = () => {
-    let count = 0
     if(likes){
         count = likes.length 
     }
     return count
 }
 
-
+if(likes){
+    checkIfLiked()
+}
 
 </script> 

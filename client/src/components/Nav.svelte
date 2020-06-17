@@ -3,7 +3,6 @@ nav{
   display: grid;
   grid-template-columns: 25fr 25fr 10fr;
   grid-gap: 5em;
-
   position: fixed;
   top: 0px;
   left: 0px;
@@ -126,6 +125,7 @@ input{
 }
 .dropDown{
   background:white;
+  color:black;
   position: absolute !important;
   bottom:-7vw;
   font-size: 60%;
@@ -148,8 +148,12 @@ input{
 	position: absolute;
 	pointer-events: none;
 }
+.dropDown p:hover{
+  text-decoration: underline;
+}
 .dropDown p{
     padding:5% 0;
+    color:black !important;
     margin:0;
     cursor: pointer;
 }

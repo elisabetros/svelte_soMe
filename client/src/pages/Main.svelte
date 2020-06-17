@@ -25,7 +25,7 @@
     </div>
 <div class="posts">
 {#each allPosts as post}
-    <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>
+    <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} userID={_id} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>
 
 {/each}
 {console.log(allPosts)}
@@ -89,9 +89,6 @@ const handlePost = async (event) => {
     event.preventDefault()
     if(post || picture){
         console.log(post)
-        
-        // console.log(picture[0])
-        // return;
         if(!picture){
             try{
                 const response= await axios.post('http://localhost/post', {post})
@@ -105,7 +102,7 @@ const handlePost = async (event) => {
             formData.set('picture', picture[0]);
               try{
                 const response= await axios.post('http://localhost/postWithImage', formData,{ headers: {
-       'content-type': 'multipart/form-data' // do not forget this 
+            'content-type': 'multipart/form-data' // do not forget this 
       }})
                 console.log(response.data)
             }catch(err){

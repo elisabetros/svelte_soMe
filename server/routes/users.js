@@ -28,7 +28,13 @@ router.post('/user/register', async (req, res) => {
     }
     if(password !== repeatPassword){
         return res.status(500).send({error: "Passwords don't match"})
-    }bcrypt.hash(password, saltRounds, async (error, hashedPassword) => {
+    }
+    const user = await userCollection.findOne({'email': email})
+    if(user){
+        return res.status(500).send({error: 'User already exists'})
+    }
+
+    bcrypt.hash(password, saltRounds, async (error, hashedPassword) => {
         if(error){
             return res.status(500).send({ error: "Couldn't hash password" })
         }
@@ -41,7 +47,7 @@ router.post('/user/register', async (req, res) => {
         }, function(err, result) {
             if(err){
                 console.log(err);
-                 return res.statur(500).send({error: 'Could not insert'});
+                 return res.status(500).send({error: 'Could not insert'});
                 }
            return res.status(200).send(result.insertedId)
         })           
