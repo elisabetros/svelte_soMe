@@ -22,7 +22,7 @@
     <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
     <button on:click={handlePost}>Post</button>
     </form>
-    </div>
+</div>
 <div class="posts">
 {#each allPosts as post}
     <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} userID={post.userID} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>

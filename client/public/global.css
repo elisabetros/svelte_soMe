@@ -17,13 +17,14 @@ body {
 }
 
 a {
-	/* color: white; */
+	cursor: pointer;
 	text-decoration: none;
 }
 
 a:hover {
 	text-decoration: underline;
 }
+
 
 a:visited {
 	color: inherit;
@@ -176,3 +177,19 @@ input[type=file]{
 	  margin:2%;
 	  z-index: 100;
   }
+
+  .dropDown p, .dropDown a{
+    padding:.5em 0;
+    color:black !important;
+    margin:0;
+    cursor: pointer;
+	border-bottom: .5px solid #eee;
+	display: block;
+}
+
+.dropDown p:last-child,
+.dropDown a:last-child {
+	border-bottom: none;
+  }
+
+  

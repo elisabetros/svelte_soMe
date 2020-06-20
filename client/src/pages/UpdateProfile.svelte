@@ -1,9 +1,9 @@
 <style>
     .updateWrapper{
-          margin:10vh 20vw 0;
+        margin:10vh 20vw 0;
         justify-content: center;
         background:white;
-        padding:5%;
+        padding:2em;
     }
     .updateWrapper>div{
         display: grid;

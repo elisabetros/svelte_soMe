@@ -9,10 +9,9 @@
     border-left: 1px solid rgba(0,0,0,.1);
     overflow-y: scroll;
 }
-a{
-    cursor: pointer;
-}
+
 .user, .group, .news{
+    color:black !important;
     display: grid;
     grid-template-columns: 2fr 10fr;
     align-items: center;

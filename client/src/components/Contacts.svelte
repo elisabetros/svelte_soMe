@@ -47,9 +47,11 @@ export let friends;
 const showChat = () => {
     console.log('chat')
 }
-friends.forEach(friend => {
-    if(!friend.profilePicture){
-        friend.profilePicture = 'standard.png'
-    }
-});
+if(friends){
+    friends.forEach(friend => {
+        if(!friend.profilePicture){
+            friend.profilePicture = 'standard.png'
+        }
+    });
+}
 </script>

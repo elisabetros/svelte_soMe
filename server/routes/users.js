@@ -12,6 +12,20 @@ const fs = require("fs") //part of node.js
 let jwt = require('jsonwebtoken');
 const config = require('../config/jwtKey');
 
+router.get('/users/find/:name', async (req, res) => {
+    const userCollection = db.collection('users')
+    const { name } = req.params
+    try{        
+        const users = await userCollection.find({$or:[{'firstname': new RegExp(name,'i')}, {'lastname': new RegExp(name,'i')}]}).toArray()
+        return res.status(200).send({users})
+    }catch(err){
+        if(err){
+            console.log(err); 
+            return res.status(500).send({error: err});
+        }
+    }
+})
+
 router.get('/user/:id', async (req, res) => {
     const userCollection = db.collection('users')
     const { id } = req.params
@@ -241,6 +255,64 @@ router.delete('/user', auth.checkToken, async (req, res) => {
         // console.log(user)
         return res.status(200).send({response: dbResponse})
     })
+})
+router.put('/user/friendRequest', auth.checkToken, async (req, res) => {
+    const userCollection = db.collection('users')
+    const { user } = req.decoded
+    const { friendID } = req.body
+    if(!friendID){
+        return res.status(500).send({error: 'Missing ID'})
+    }
+    const friend =  await userCollection.findOne({'_id': ObjectId(friendID)})
+           const bulkUpdateOps = [
+            {
+                "updateOne": {
+                    "filter": { "_id":ObjectId(user._id) },
+                    "update": { "$push": { "friendRequests": {'friendID': friendID, firstname: friend.firstname, lastname: friend.lastname} } } 
+                }
+            },
+            {
+                "updateOne": {
+                    "filter": { "_id": ObjectId(friend._id) },
+                    "update": { "$push": { "notifications.friendRequests":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname} } }
+                }
+            }
+        ];
+        
+      await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1}, (err, result) => {
+            if(err){console.log(err); return res.status(500).send({error:err});}
+            return res.status(200).send({result})
+        })
+})
+
+router.delete('/user/friendRequest', auth.checkToken, async (req, res) => {
+    console.log('delete friend request')
+    const userCollection = db.collection('users')
+    const { user } = req.decoded
+    const { friendID } = req.body
+    if(!friendID){
+        return res.status(500).send({error: 'Missing ID'})
+    }
+    const friend =  await userCollection.findOne({'_id': ObjectId(friendID)})
+           const bulkUpdateOps = [
+            {
+                "updateOne": {
+                    "filter": { "_id":ObjectId(user._id) },
+                    "update": { "$pull": { "friendRequests": {'friendID': friendID, firstname: friend.firstname, lastname: friend.lastname} } } 
+                }
+            },
+            {
+                "updateOne": {
+                    "filter": { "_id": ObjectId(friend._id) },
+                    "update": { "$pull": { "notifications.friendRequests":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname} } }
+                }
+            }
+        ];
+        
+      await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1}, (err, result) => {
+            if(err){console.log(err); return res.status(500).send({error:err});}
+            return res.status(200).send({result})
+        })
 })
 
 router.put('/user/friend', auth.checkToken, async (req, res) => {

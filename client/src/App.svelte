@@ -6,11 +6,13 @@ import UpdateProfile from './pages/UpdateProfile.svelte'
 import Contacts from './components/Contacts.svelte'
 import Left from './components/Left.svelte'
 import Profile from './pages/Profile.svelte'
+import ActivityLog from './pages/ActivityLog.svelte'
+
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
 
 $: isLoggedIn= false
-$: user = {}
+let user = {}
 $: update = false;
 
 export let url = "";
@@ -72,6 +74,9 @@ const handleUpdate = (data) => {
 	 </Route> 
 	 <Route path="/profile/:id" let:params>
 			<Profile {...user} userID={params.id}/>
+	 </Route> 
+	 <Route path="/activitylog" >
+			<ActivityLog {...user} />
 	 </Route> 
 	<Contacts {...user} />
 	<Left {...user} />

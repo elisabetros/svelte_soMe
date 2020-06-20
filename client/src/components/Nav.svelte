@@ -10,7 +10,7 @@ nav{
   height: 4rem;
   padding: 0px 2vw;
   font-size: 1.5rem;
-  color: #fff;
+  color: #fff !important;
   background: #009688;
   box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);
   z-index: 5;
@@ -23,6 +23,7 @@ nav div.left{
   grid-template-columns: 5fr 10fr;
   grid-gap: 1rem;
   align-items: center;
+  position: relative;
 }
 nav div.left div.logo{
   display: grid;
@@ -35,7 +36,7 @@ nav div.left div.logo{
 .left form > div{
   position: relative;
 }
-.left form > div > i{
+.left form  i{
   position: absolute;
   right: 0.5rem;
   font-size: 1rem;
@@ -47,6 +48,7 @@ input{
    margin:0;
   padding:0 0 0 10px;
   font-size: 80%;
+  width:100%;
 }
 .middle{
   display: grid;
@@ -69,6 +71,7 @@ input{
   margin:3% 0;
   border-right:.5px solid rgba(250, 250, 250, 0.3);
   cursor: pointer;
+  color:white !important;
 }
 .middle>div:last-child{
   grid-template-columns: 1fr;
@@ -123,13 +126,20 @@ input{
   background: #f02849;
   border-radius: 50%;
 }
+.searchDropdown{
+  top: 6vh;
+  width: 64.5%;
+  right: 0 !important;
+  height:auto;
+}
+
 .dropDown{
   background:white;
   color:black;
   position: absolute !important;
-  bottom:-7vw;
+  top:6vh;
   font-size: 60%;
-  padding:1%;
+  padding:.8em;
   right:1vw;
   color:black;
   border-radius: 5px;
@@ -151,15 +161,8 @@ input{
 .dropDown p:hover{
   text-decoration: underline;
 }
-.dropDown p{
-    padding:5% 0;
-    color:black !important;
-    margin:0;
-    cursor: pointer;
-}
-.dropDown p:first-child {
-  border-bottom: .5px solid #eee;
-}
+
+
 .dropDown:after {
 	border-color: rgba(136, 183, 213, 0);
 	border-bottom-color: #fff;
@@ -172,6 +175,7 @@ input{
 	border-width: 7px;
 	margin-left: -7px;
 }
+
 </style>
 
 <!-- ########################### -->
@@ -186,18 +190,23 @@ input{
         </div>
       </Link>
       <div>
-        <form>
-          <div class="green">
-            <i class="fas fa-search"></i>
-            <input type="text">
+        <form on:submit={handleSearch}>
+          <div class="green">        
+            <i class="fas fa-search" on:click={handleSearch}></i>
+            <input type="text" name="search" bind:value={searchStr} autocomplete="off" >
           </div>
         </form>
+            <div class="searchDropdown dropDown hidden">
+            <!-- {#if searchUsers} -->
+              
+            <!-- {/if} -->
+            </div>
       </div>
     </div>
 
     <div class="middle">
     <Link to={"/profile/"+_id}>
-      <div class="username" on:click={showProfile}>
+      <div class="username" >
         <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
         <p>{firstname}</p>    
       </div>
@@ -213,15 +222,23 @@ input{
         <div class="chat-counter">1</div>       
       </div>
       <div>
-        <i class="far fa-bell"></i> 
-        <div class="notification-counter">5</div>         
+        <i class="far fa-bell" on:click={showNotifications}></i> 
+        {#if notifications}
+          <div class="notification-counter">{notificationCounter()}</div> 
+          <div class="notificationDropdown dropDown hidden">
+            {#each notifications.friendRequests as request}
+              <Link to="/activitylog">{request.firstname} {request.lastname} sent you a friend request</Link>
+            {/each}
+      </div>           
+        {/if}
       </div>
       <div on:click={showDropDown}>
        <i class="fas fa-sort-down"></i>      
       </div>  
-      <div class="dropDown hidden">
+      <div class="menuDropdown dropDown hidden">
           <p on:click={handleLogout}>Log out</p>
           <Link to="/updateprofile">Update Information</Link>
+          <Link to="/activitylog">Activity Log</Link>
       </div>                
     </div>
 
@@ -240,11 +257,26 @@ export let lastname;
 export let profilePicture;
 export let onLogout;
 export let onUpdate;
-export let _id
+export let _id;
+export let notifications;
 
+// let notificationCounter =""
+let notificationCounter = () => {
+  console.log(notifications)
+  return notifications.friendRequests.length
+}
+
+let searchStr = "";
+$: searchUsers = ""
+
+
+const showNotifications = () => {
+ console.log('drop down')
+ document.querySelector('.notificationDropdown').classList.toggle('hidden')
+}
 const showDropDown = () => {
  console.log('drop down')
- document.querySelector('.dropDown').classList.toggle('hidden')
+ document.querySelector('.menuDropdown').classList.toggle('hidden')
 }
 const handleLogout = () => {
   console.log('logout')
@@ -255,11 +287,34 @@ const handleUpdate = () => {
   showDropDown()
 }
 
-const showProfile = () => {
-
-}
 const showMain = () => {
   onUpdate(false)
+}
+
+
+const handleSearch = async (event) => {
+  event.preventDefault()
+  document.querySelector('.searchDropdown').innerHTML = ""
+  console.log(searchStr)
+  if(searchStr){
+    try{
+      const response = await axios(`http://localhost/users/find/${searchStr}`)
+      console.log(response.data)
+      searchUsers = await response.data.users
+      console.log(searchUsers)
+      searchUsers.map(user => {
+        let linkUser = document.createElement('a')
+        linkUser.textContent = user.firstname + " " + user.lastname
+        linkUser.setAttribute('href', `/profile/${user._id}`)
+        document.querySelector('.searchDropdown').append(linkUser)
+        document.querySelector('.searchDropdown').classList.remove('hidden')
+      })
+      if(searchUsers.length > 3){
+      }
+    }catch(err){
+      if(err){console.log(err.response); return; }
+    }
+  }
 }
 
 </script>

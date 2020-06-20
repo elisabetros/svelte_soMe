@@ -27,7 +27,7 @@
         color :white;
         grid-column: 2;
     }
-    .btnUpdate{
+    .btn{
         background:#ddd;
         align-self: end;
         width:auto;
@@ -35,8 +35,10 @@
         padding:2%;
         border-radius: 2px;
         border:1px solid rgba(0,0,0,.3);
+        text-align:center;
+        cursor: pointer;
     }
-    .btnUpdate p{
+    .btn p{
         margin:0;
         text-align: center;
     }
@@ -53,6 +55,9 @@
         justify-content: center;
         grid-gap: 2%;
     }
+    .profilePicture:hover .customLabel{
+        visibility:visible;
+    }
 </style>
 
 <!-- ########################### -->
@@ -62,7 +67,15 @@
         <img src={"http://localhost/userImg/"+ user.profilePicture} class="profilePicture" alt="Profile photo">
         <h1>{user.firstname} {user.lastname}</h1>
         {#if isUsers}
-            <div class="btnUpdate"><Link to="/updateprofile"><p>Update Information</p></Link></div>
+            <div class="btn btnUpdate"><Link to="/updateprofile"><p>Update Information</p></Link></div>
+        {:else}
+            {#if friends}
+                {#if friends.includes(user._id)}
+                <div class="btn btnRemoveFriend" on:click={handleRemoveFriend}> Friends</div>
+                {/if}
+            {:else}
+                <div class="btn btnAddFriend" on:click={handleAddFriend}>Send friend Request</div>
+            {/if}
         {/if}
     </div>
     {#if isUsers}
@@ -93,6 +106,7 @@
 
     export let _id;
     export let userID;
+    export let friends;
 
     let user = {}
     let isUsers = false;
@@ -104,12 +118,34 @@
     const handlePost = () => {
 
     }
+
+    const handleRemoveFriend = async () => {
+        try{
+            const response = await axios.delete('http://localhost/friend',  {data:{'friendID': userID}})
+            console.log(response.data)
+        }catch(err){
+            if(err){console.log(err.response); }
+        }
+    }
+    const handleAddFriend = async () => {
+        console.log('add friend')
+        try{
+            const response = await axios.put('http://localhost/user/friendRequest', {'friendID': userID})
+            console.log(response.data)
+        }catch(err){
+            if(err){console.log("message"); return; }
+            console.log("message")
+        }
+    }
     const fetchUser = async () => {
         const response = await axios(`http://localhost/user/${userID}`)
         console.log(response.data.user)
         user= await response.data.user
         if(!user.coverPicture){
             user.coverPicture = 'standard.jpg'
+        }
+        if(!user.profilePicture){
+            user.profilePicture = 'standard.png'
         }
         convertUserPosts()
     }
