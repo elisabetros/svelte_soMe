@@ -161,31 +161,52 @@ router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const form = new formidable.IncomingForm()
     const { user } = req.decoded
-
-    const userToUpdate = await userCollection.findOne({_id: ObjectId(user._id)})
-    // if(userToUpdate.hasOwnProperty('profilePicture')){
-    //     fs.unlinkSync(user.profilePicture)
-    // }
     form.parse(req, (err, fields, files) => {
         if(err){return res.send("error in file")}
         
         detect.fromFile(files.picture.path, (err, result) => {
-            // console.log(result.ext)
+            
             const pictureName = uuidv1()+"."+result.ext
-            // console.log(pictureName) // ed671140-69ea-11ea-9ec7-9ff298c14d8c.jpg
             const allowedImageTypes = ["jpg", "jpeg", "png"]
+
             if(! allowedImageTypes.includes(result.ext)){
                 return res.status(500).send({error:"Only image files allowed"})
             }
             const oldPath = files.picture.path
             const newPath = path.join(__dirname,"..", "pictures", "profilePictures", pictureName)
+
             fs.rename(oldPath, newPath, async err => {
                 if(err){console.log("cannot move file"); return res.status(500).send({error:"Cannot move file"});}
-                userCollection.findOneAndUpdate({_id:ObjectId(user._id)}, {$set:{'profilePicture': pictureName}}, (err, dbResponse) => {
-                    if(err){
-                        return res.status(500).send({error:'Something went wrong, please try again'})
-                    }
-                    const user = dbResponse.value;
+              
+                try{
+                    const bulkUpdateOps = [
+                        {
+                            "updateOne": {
+                                "filter": { "_id":ObjectId(user._id) },
+                                "update": { "$set": { "profilePicture": pictureName} } 
+                            }
+                        },
+                        {
+                            "updateMany": {
+                                "filter": { "friends.friendID": user._id },
+                                "update": { "$set": { "friends.$.profilePicure":  pictureName } }
+                            }
+                        }
+                    ];
+                    
+                  await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1}, (err, result) => {
+                        if(err){console.log(err); return res.status(500).send({error:err});}
+                        return res.status(200).send({result})
+                    })
+
+
+
+
+
+               }catch(err){
+                   if(err){console.log(err); return res.status(500).send({error:'Something went wrong'}); }
+               }
+                    user.profilePicture = pictureName
                     jwt.sign({user}, config.secretKey, { expiresIn: '12h' } ,(err, token) => {
                         if(err) {
                         console.log(err) 
@@ -193,7 +214,7 @@ router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
                         } 
                         return res.send({token, pictureName})
                     })
-                })
+               
             })
         })
     })
@@ -353,7 +374,7 @@ router.put('/user/friend', auth.checkToken, async (req, res) => {
         {
             "updateOne": {
                 "filter": { "_id":ObjectId(user._id) },
-                "update": { "$push": { "friends": {'friendID': friendID, firstname: friend.firstname, lastname: friend.lastname} } } 
+                "update": { "$push": { "friends": {'friendID': friendID, firstname: friend.firstname, lastname: friend.lastname, profilePicture: friend.profilePicture} } } 
             }
         },
         {
@@ -365,7 +386,7 @@ router.put('/user/friend', auth.checkToken, async (req, res) => {
         {
             "updateOne": {
                 "filter": { "_id": ObjectId(friend._id) },
-                "update": { "$push": { "friends":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname} } }
+                "update": { "$push": { "friends":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname, profilePicture: user.profilePicture} } }
             }
         },
         {

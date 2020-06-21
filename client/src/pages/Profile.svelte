@@ -267,7 +267,7 @@
     }
     const handleProfilePicture = async (event) => {
         event.preventDefault()
-        console.log(values)
+        // console.log(values)
         if(values.profilePicture){
             try{
                 let formData = new FormData
