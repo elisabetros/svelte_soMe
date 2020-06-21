@@ -48,7 +48,7 @@ router.post('/postWithImage', auth.checkToken, (req, res) => {
                 if(err){
                     return res.send({err})
                 }
-                return res.send({dbresponse})
+                return res.send({response: pictureName})
             })
             })
         })

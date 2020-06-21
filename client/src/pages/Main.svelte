@@ -27,7 +27,7 @@
 </div>
 <div class="posts">
 {#each allPosts as post}
-    <Post {...post} name={post.name} isLoggedIn={post.isLoggedIn} userID={post.userID} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>
+    <Post onDelete={handleDelete} {...post} name={post.name} isLoggedIn={post.isLoggedIn} userID={post.userID} profilePicture={post.profilePicture} date={post.date} isUsers={post.isUsers}/>
 
 {/each}
 </div>
@@ -48,12 +48,17 @@ let post = ""
 let picture;
 let allPosts = [];
 
+const handleDelete = (id) => {
+    newPosts = allPosts.filter(post => {
+        if(post._id !== id) return post
+    })
+    allPosts = newPosts
+}
 const handleChange = (event) => {
     picture = event.target.files
     console.log(event.target.files)
     if(event.target.name === 'picture'){
         let fileName= event.target.value.split("\\").pop();
-        
         document.querySelector('.customLabel').innerHTML ="<span></span>"+ fileName;
     }
 }
@@ -113,8 +118,8 @@ const handlePost = async (event) => {
             }
         }
     }
-
 }
+
 const orderPosts = () =>{
     let sortedPosts = allPosts.sort((a,b) => {
         return new Date(b.date) - new Date(a.date);
@@ -124,7 +129,7 @@ const orderPosts = () =>{
 }
 const dateFromObjectId = function (objectId) {
     let date = new Date(parseInt(objectId.substring(0, 8), 16) * 1000);
-    date = date.toDateString()
+    date = date.toString().substring(0,21)
     return date
 };
 

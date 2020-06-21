@@ -27,7 +27,7 @@
    .post p{
        grid-column: 2
    }
-   .post .user p:nth-child(3){ 
+   .post .user .time{ 
        font-size: 70%
    }      
    .post .user p:nth-child(2){       
@@ -52,10 +52,10 @@
        border:2px solid white;
        background:green;
        border-radius: 50%;
-       width:10px;
-       height:10px;
+       width:15px;
+       height:15px;
        position: absolute;
-       bottom:17%;
+       bottom:5%;
        left:calc(45px + 2%);
    }
    p{
@@ -149,9 +149,9 @@
                 <div class="status"></div>
             {/if}
         <Link to={"/profile/"+userID}>
-            <p>{name}</p>
+            <p><strong>{name}</strong></p>
         </Link>
-            <p>{date}</p>
+            <p class="time">{convertDate()}</p>
         {#if isUsers}
             <div class="editPost" on:click={showEditModel}>...</div>
         {/if}
@@ -204,6 +204,7 @@
                 <textarea type="text" value={postContent} name="post" on:change={handleChange}/>
                 <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
                 <button on:click={handleEdit}>Edit Post</button>
+                <button on:click={handleDelete}>Delete Post</button>
             </form>
         </div>
     </div>
@@ -241,6 +242,19 @@ const checkIfLiked = () => {
        if(found){
            like = true;
        }
+    }
+}
+
+const convertDate = () => {
+    const currDate = new Date().getTime()
+    const postDate = new Date(date).getTime()
+    // console.log(currDate, 'post date:',new Date(date))
+    const timeDifference = Math.abs(currDate-postDate)/36e5
+    if(timeDifference>24){
+        return date.substring(0,11)
+    }else{
+        let dateString = `${Math.floor(timeDifference)} hours ago`
+        return dateString
     }
 }
 
@@ -292,6 +306,18 @@ const handleChange = (event) => {
         values.newPostContent = event.target.value
     }
 }
+const handleDelete = async (event) => {
+    event.preventDefault()
+    try{
+        const response = await axios.delete('http://localhost/post', {data:{'postID': _id}})
+        console.log(response.data)
+        onDelete(_id)
+        showEditModel()
+    }catch(err){
+        if(err){console.log(err.response); }
+    }
+}
+
 const handleEdit = async (event) => {
     event.preventDefault()
     console.log(values)

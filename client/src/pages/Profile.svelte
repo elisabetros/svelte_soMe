@@ -55,29 +55,47 @@
         justify-content: center;
         grid-gap: 2%;
     }
-    
-    .hover{
-        visibility: hidden;
+    .hoverCover, .hover{
         transition: all .2s;
         z-index: 10;
         position: absolute;
-        bottom:calc(-5vh + 4px);
-        left:8px;
-        background: rgba(0,0,0,.3);
-        padding: 1em 0 0;
         text-align: center;
         box-sizing: border-box;
-        width: 192px;
-        height:100px;
-        border-radius: 0 0 100px 100px;
         color:white;
+        max-width: 5vw;
+        height:40px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    .hoverCover{
+        top:1vw;
+        left:1vw;
+        padding: 1em;        
+    }
+    .hover{
+        padding: 1em;
+        bottom:0;
+        left:0;
+        border-radius: 0 0 100px 100px;
     }
     .profilePicture{
         cursor: pointer;
     }
-    .profilePicture:hover + .hover{
-        visibility: visible;
-
+    .hoverCover:hover,
+     .hover:hover {
+         background: rgba(0,0,0,.5);
+         max-width: 100%;
+     }
+    .hoverCover:hover{
+        line-height: 10px;
+        border:1px solid white;
+    }
+    .hover:hover {
+        height:100px;
+        width: 192px;
+        left:8px;    
+        padding: 1em 0 0;
+        bottom: calc(-5vh + 4px);
     }
     .modelContent {
         height: 20vh;
@@ -110,15 +128,23 @@
         
         <img src={"http://localhost/userImg/"+ user.profilePicture} class="profilePicture" alt="Profile photo">
         {#if isUsers}
-        <div class="hover" on:click={showModel}>
+        <div class="hover" on:click={()=>showModel('profile')}>
             <i class="fas fa-camera"></i> Update Picture
+        </div>
+        <div class="hoverCover" on:click={()=>showModel('cover')}>
+            <i class="fas fa-camera"></i> Update Cover Picture
         </div>
             <div class="model hidden">
                 <div class="modelContent">
                 <span class="close" on:click={showModel}>X</span>
-                    <form action="">
-                     <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="profilePicture" on:change={handleChange}></label>
+                    <form id="frmImg" enctype="multipart/form-data">
+                    {#if modelType === 'cover'}
+                     <label class="customLabel" for="coverPicture"><i class="far fa-image"></i> Add image</label><input type="file" id="coverPicture" name="coverPicture" on:change={handleChange}>
+                    <button on:click={handleCoverPicture}>Set Cover Picture</button>
+                    {:else}
+                     <label class="customLabel" for="profilePicture"><i class="far fa-image"></i> Add image</label><input type="file" id="profilePicture" name="profilePicture" on:change={handleChange}>
                     <button on:click={handleProfilePicture}>Set Profile Picture</button>
+                    {/if}
                     </form>
                 </div>
             </div>
@@ -145,7 +171,7 @@
             <form enctype='multipart/form-data' class="frmPost">
             <img src={"http://localhost/userImg/"+ user.profilePicture} class="profilePicture small"/>
             <textarea type="text" placeholder={"What's on your mind, "+ user.firstname + '?'} name="post" on:change={handleChange}/>
-            <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
+            <label class="customLabel" for="picture"><i class="far fa-image"></i> Add image</label><input type="file" id="picture" name="picture" on:change={handleChange}>
             <button on:click={handlePost}>Post</button>
             </form>
         </div>
@@ -153,7 +179,7 @@
     <div class="posts">
         {#if user.posts}
             {#each user.posts as post}
-                 <Post {...post} name={user.firstname + user.lastname} isLoggedIn={user.isLoggedIn} userID={post.userID} profilePicture={user.profilePicture} date={post.date} isUsers={isUsers}/>
+                 <Post onDelete={handleDelete} {...post} name={user.firstname + ' ' + user.lastname} isLoggedIn={user.isLoggedIn} userID={post.userID} profilePicture={user.profilePicture} date={post.date} isUsers={isUsers}/>
             {/each}
         {/if}
     </div>
@@ -171,24 +197,74 @@
     export let friends;
     export let friendRequests
 
-    let user = {}
+    $: user = {}
     let isUsers = false;
     let values = {}
+    let modelType = "";
 
     const handleChange = (event) => {
-        console.log(event.target.files)
-        if(event.target.files.length){
+        console.log(event.target.name, values)
+        if(event.target.files){
             let fileName= event.target.value.split("\\").pop();
-            document.querySelector('.customLabel').innerHTML ="<span></span>"+ fileName;
+            event.target.parentElement.querySelector('.customLabel').innerHTML ='<span></span>' + fileName;
             values[event.target.name] = event.target.files
         }else{
             values[event.target.name] = event.target.value
         }
     }
-    const handlePost = () => {
+
+    const handleCoverPicture = async (event) => {
+        event.preventDefault()
+        if(values.coverPicture){
+            let formData = new FormData
+            formData.set('picture', values.coverPicture[0]);
+            try{
+                const response = await axios.post('http://localhost/user/coverImg', formData)
+                console.log(response.data)
+                showModel()
+                user.coverPicture = response.data.response
+            }catch(err){
+                if(err){console.log(err.response.data) }
+            }
+        }
+    }
+
+    const handlePost = async () => {
+    console.log(values)
+    event.preventDefault()
+    if(values.post || values.picture){
+        console.log(values)
+        if(!values.picture){
+            try{
+                const response= await axios.post('http://localhost/post', {'post': values.post})
+                console.log(response.data)
+                user.posts = [...user.posts, {'postContent': values.post}]
+            }catch(err){
+                if(err){console.log(err.response); return; }
+            }
+        }else{
+            let formData = new FormData
+            formData.set('post', values.post);
+            formData.set('picture', values.picture[0]);
+              try{
+                const response= await axios.post('http://localhost/postWithImage', formData,{ headers: {
+            'content-type': 'multipart/form-data' }})
+                console.log(response.data)
+                user.posts = [...user.posts, {'postContent': values.post, 'postImg': response.data.response }]
+            }catch(err){
+                if(err){console.log(err.response); return; }
+            }
+        }
+    }
+}
+
+    const handleDelete = (id) => {
+    newPosts = user.posts.filter(post => {
+        if(post._id !== id) return post
+    })
+    user.posts = newPosts
 
     }
-    
     const handleProfilePicture = async (event) => {
         event.preventDefault()
         console.log(values)
@@ -201,6 +277,7 @@
                 console.log(response.data)
                 sessionStorage.setItem('token', response.data.token)
                 user.profilePicture = response.data.pictureName
+                
                 showModel()
             }catch(err){
                 if(err){
@@ -210,7 +287,9 @@
      }
     }
 
-    const showModel = () => {
+    const showModel = (type) => {
+        console.log(values)
+        modelType = type;
         document.querySelector('.model').classList.toggle('hidden');
     }
 
@@ -269,7 +348,7 @@
     }
     const dateFromObjectId = function (objectId) {
         let date = new Date(parseInt(objectId.substring(0, 8), 16) * 1000);
-        date = date.toDateString()
+        date = date.toString().substring(0,21)
         return date
     };
     if(_id === userID){

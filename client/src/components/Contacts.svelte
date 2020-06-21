@@ -50,6 +50,7 @@ const showChat = () => {
 }
 if(friends){
     friends.forEach(friend => {
+        console.log(friend.profilePicture)
         if(!friend.profilePicture){
             friend.profilePicture = 'standard.png'
         }

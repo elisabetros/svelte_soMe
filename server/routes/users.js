@@ -17,6 +17,9 @@ router.get('/users/find/:name', async (req, res) => {
     const { name } = req.params
     try{        
         const users = await userCollection.find({$or:[{'firstname': new RegExp(name,'i')}, {'lastname': new RegExp(name,'i')}]}).toArray()
+        users.forEach(user=> {
+            delete user.password
+        })
         return res.status(200).send({users})
     }catch(err){
         if(err){
@@ -31,6 +34,7 @@ router.get('/user/:id', async (req, res) => {
     const { id } = req.params
     try{
         const user = await userCollection.findOne({_id: ObjectId(id)})
+        delete user.password
         return res.status(200).send({user})
     }catch(err){
         if(err){
@@ -120,16 +124,21 @@ router.post('/user/login', async (req, res) => {
     })
 })
 
-router.get('/user', auth.checkToken, (req, res) => {
+router.get('/user', auth.checkToken, async (req, res) => {
     //verify the JWT token generated for the user
     const userCollection = db.collection('users')
    const { user } = req.decoded
  if(req.decoded){
-   userCollection.findOne({'_id': ObjectId(user._id)}, (err, dbResponse) => {
-         if(err){console.log(err); return;}
-        //  console.log(dbResponse)
-         return res.status(200).send({user: dbResponse})
-     })
+     try{
+         const userToReturn = await userCollection.findOne({'_id': ObjectId(user._id)})
+        //  console.log(userToReturn)
+         delete userToReturn.password
+         return res.status(200).send({user: userToReturn})
+     }catch(err){
+         if(err){console.log("message"); 
+         return res.status(500).send({error: 'something went wrong'}) }
+     }
+       
  }
 });
 
@@ -435,7 +444,7 @@ router.post('/user/coverImg', auth.checkToken, (req, res) => {
                         return res.status(500).send({error:'Something went wrong, please try again'})
                     }
                     
-                    return res.status(200).send({response: 'Success'})
+                    return res.status(200).send({response: pictureName})
                 })
             })
         })
