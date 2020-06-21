@@ -55,8 +55,51 @@
         justify-content: center;
         grid-gap: 2%;
     }
-    .profilePicture:hover .customLabel{
-        visibility:visible;
+    
+    .hover{
+        visibility: hidden;
+        transition: all .2s;
+        z-index: 10;
+        position: absolute;
+        bottom:calc(-5vh + 4px);
+        left:8px;
+        background: rgba(0,0,0,.3);
+        padding: 1em 0 0;
+        text-align: center;
+        box-sizing: border-box;
+        width: 192px;
+        height:100px;
+        border-radius: 0 0 100px 100px;
+        color:white;
+    }
+    .profilePicture{
+        cursor: pointer;
+    }
+    .profilePicture:hover + .hover{
+        visibility: visible;
+
+    }
+    .modelContent {
+        height: 20vh;
+        display: grid;
+    }
+    .modelContent form{
+        display: grid;
+        grid-template-columns: 4fr 4fr;
+        align-content: center;
+        margin: 2em ;
+    }
+    .modelContent .customLabel{
+        margin: 2em;
+        width: 172px;
+        height:50px;
+        justify-self: right;
+    }
+    .modelContent button{
+        justify-self: left;
+        margin:auto 0;
+        height:50px;
+        width:10vw;
     }
 </style>
 
@@ -64,14 +107,33 @@
 
 <div class="profile">
         <div class="coverImg" style={'background-image:url(http://localhost/coverImg/'+user.coverPicture +');'}>
+        
         <img src={"http://localhost/userImg/"+ user.profilePicture} class="profilePicture" alt="Profile photo">
+        {#if isUsers}
+        <div class="hover" on:click={showModel}>
+            <i class="fas fa-camera"></i> Update Picture
+        </div>
+            <div class="model hidden">
+                <div class="modelContent">
+                <span class="close" on:click={showModel}>X</span>
+                    <form action="">
+                     <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="profilePicture" on:change={handleChange}></label>
+                    <button on:click={handleProfilePicture}>Set Profile Picture</button>
+                    </form>
+                </div>
+            </div>
+        {/if}
         <h1>{user.firstname} {user.lastname}</h1>
         {#if isUsers}
             <div class="btn btnUpdate"><Link to="/updateprofile"><p>Update Information</p></Link></div>
         {:else}
             {#if friends}
-                {#if friends.includes(user._id)}
-                <div class="btn btnRemoveFriend" on:click={handleRemoveFriend}> Friends</div>
+                {#if friends.includes(_id)}
+                    <div class="btn btnRemoveFriend" on:click={handleRemoveFriend}> Friends</div>
+                 {:else if friendRequests && friendRequests.some( request => request.friendID === user._id)}
+                    <div class="btn btnAddFriend" on:click={handleCancelRequest}>Cancel friend Request</div>
+                {:else}
+                    <div class="btn btnAddFriend" on:click={handleAddFriend}>Send friend Request</div>
                 {/if}
             {:else}
                 <div class="btn btnAddFriend" on:click={handleAddFriend}>Send friend Request</div>
@@ -107,21 +169,69 @@
     export let _id;
     export let userID;
     export let friends;
+    export let friendRequests
 
     let user = {}
     let isUsers = false;
     let values = {}
 
-    const handleChange = () => {
-
+    const handleChange = (event) => {
+        console.log(event.target.files)
+        if(event.target.files.length){
+            let fileName= event.target.value.split("\\").pop();
+            document.querySelector('.customLabel').innerHTML ="<span></span>"+ fileName;
+            values[event.target.name] = event.target.files
+        }else{
+            values[event.target.name] = event.target.value
+        }
     }
     const handlePost = () => {
 
     }
+    
+    const handleProfilePicture = async (event) => {
+        event.preventDefault()
+        console.log(values)
+        if(values.profilePicture){
+            try{
+                let formData = new FormData
+                formData.set('picture', values.profilePicture[0]);
+                const response = await axios.post('http://localhost/user/profilePicture', formData,{ headers: {
+                    'content-type': 'multipart/form-data'  }})
+                console.log(response.data)
+                sessionStorage.setItem('token', response.data.token)
+                user.profilePicture = response.data.pictureName
+                showModel()
+            }catch(err){
+                if(err){
+                    console.log(err.response.data);
+                 }
+        }
+     }
+    }
 
+    const showModel = () => {
+        document.querySelector('.model').classList.toggle('hidden');
+    }
+
+    const handleCancelRequest = async () => {
+           try{
+            const response = await axios.delete('http://localhost/user/friendRequest',  {data:{'friendID': userID}})
+            console.log(response.data)
+            newFriendRequests = friendRequests.filter(request => {
+                if(request.friendID !== user._id){
+                    return request
+                }
+            })
+            friendRequests = newFriendRequests
+        }catch(err){
+            if(err){console.log(err.response); }
+        }
+    }
+    
     const handleRemoveFriend = async () => {
         try{
-            const response = await axios.delete('http://localhost/friend',  {data:{'friendID': userID}})
+            const response = await axios.delete('http://localhost/user/friend',  {data:{'friendID': userID}})
             console.log(response.data)
         }catch(err){
             if(err){console.log(err.response); }
@@ -132,22 +242,24 @@
         try{
             const response = await axios.put('http://localhost/user/friendRequest', {'friendID': userID})
             console.log(response.data)
+           friendRequests = [...friendRequests, {'friendID': user._id, 'firstname': user.firstname, 'lastname': user.lastname}]
         }catch(err){
-            if(err){console.log("message"); return; }
-            console.log("message")
+            if(err){console.log(err.response.data); return; }
         }
     }
     const fetchUser = async () => {
         const response = await axios(`http://localhost/user/${userID}`)
         console.log(response.data.user)
-        user= await response.data.user
+        user = response.data.user
         if(!user.coverPicture){
             user.coverPicture = 'standard.jpg'
         }
         if(!user.profilePicture){
             user.profilePicture = 'standard.png'
         }
-        convertUserPosts()
+        if(user.posts){
+            convertUserPosts()
+        }
     }
     const convertUserPosts = () => {
         user.posts.forEach(post => {

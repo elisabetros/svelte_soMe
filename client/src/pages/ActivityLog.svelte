@@ -44,12 +44,19 @@
         {/each}
     {/if}
     {#if notifications}  
-        {#each notifications.friendRequests as friendRequest}
-            <div class="friendRequest">
-                <p>{friendRequest.firstname} {friendRequest.lastname}</p>
-                <button on:click={()=>acceptRequest(friendRequest.friendID)}>Accept Friend Request</button>
-            </div>
-        {/each}
+        {#if notifications.friendRequests}  
+            {#each notifications.friendRequests as friendRequest}
+                <div class="friendRequest">
+                    <p>{friendRequest.firstname} {friendRequest.lastname}</p>
+                    <button on:click={()=>acceptRequest(friendRequest.friendID)}>Accept Friend Request</button>
+                </div>
+            {/each}
+        {/if}
+        {#if notifications.notification}
+            {#each notifications.notification as notification}
+                <div class="message"> <p>{notification.message}</p></div>
+            {/each}
+        {/if}
     {/if}
 </div>
 <!-- ################### -->
@@ -84,13 +91,28 @@ const cancelRequest = async (id) => {
 
 const acceptRequest = async (id) => {
 try{
-            const response = await axios.put('http://localhost/user/friendRequest', {'friendID': id})
+            const response = await axios.put('http://localhost/user/friend', {'friendID': id})
             console.log(response.data)
+             let newFriendRequests = notifications.friendRequests.filter(friendRequest => {
+                if(friendRequest.friendID !== id){
+                    return friendRequest
+                }
+            })
+            notifications.friendRequests = newFriendRequests
         }catch(err){
             if(err){
-                console.log(err.response); 
+                console.log(err.response.data.error); 
             }
         }
 }
 
+const fetchNotificationsSeen = async () => {
+
+    try{
+        const response = await axios.put('http://localhost/user/notifications')
+        console.log(response.data)
+    }catch(err){
+        if(err){console.log(err.response.data.error);  }
+    }
+}
 </script>

@@ -182,7 +182,7 @@ router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
                         console.log(err) 
                         return res.status(500).send({error: 'Could not create token'})
                         } 
-                        return res.send({token, dbResponse})
+                        return res.send({token, pictureName})
                     })
                 })
             })
@@ -316,13 +316,29 @@ router.delete('/user/friendRequest', auth.checkToken, async (req, res) => {
 })
 
 router.put('/user/friend', auth.checkToken, async (req, res) => {
+    console.log('add friend')
     const userCollection = db.collection('users')
     const { user } = req.decoded
     const { friendID } = req.body
     if(!friendID){
         return res.status(500).send({error: 'Missing ID'})
     }
-  const friend =  await userCollection.findOne({'_id': ObjectId(friendID)})
+    try{        
+        const checkIfAlreadyFriend = await userCollection.find({_id: ObjectId(user._id)}).project({'friends':1}).toArray()
+        if(checkIfAlreadyFriend[0].hasOwnProperty('friends')){
+            checkIfAlreadyFriend[0].friends.map(friend => {
+                console.log(friend.friendID)
+                if(friend.friendID === friendID){
+                    return res.status(500).send({error: 'Already a friend'})
+                }
+            }) 
+        }
+    }catch(err){
+        if(err){console.log(err); return res.status(500).send({error: err}); }
+    }
+    // return res.send({checkIfAlreadyFriend})
+    
+    const friend =  await userCollection.findOne({'_id': ObjectId(friendID)})
 //   return res.send({friend})
        const bulkUpdateOps = [
         {
@@ -333,10 +349,28 @@ router.put('/user/friend', auth.checkToken, async (req, res) => {
         },
         {
             "updateOne": {
+                "filter": { "_id":ObjectId(user._id) },
+                "update": { "$pull": { "notifications.friendRequests": {'friendID': friendID} } } 
+            }
+        },
+        {
+            "updateOne": {
                 "filter": { "_id": ObjectId(friend._id) },
                 "update": { "$push": { "friends":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname} } }
             }
-        }
+        },
+        {
+            "updateOne": {
+                "filter": { "_id":ObjectId(friend._id) },
+                "update": { "$pull": { "friendRequests": {'friendID': user._id} } } 
+            }
+        },
+        {
+            "updateOne": {
+                "filter": { "_id":ObjectId(friend._id) },
+                "update": { "$push": { "notifications.notification": { 'message': `${user.firstname} ${user.lastname} accepted your friend request`, 'seen': 0 } } } 
+            }
+        },
     ];
     
   await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1}, (err, result) => {
@@ -401,13 +435,6 @@ router.post('/user/coverImg', auth.checkToken, (req, res) => {
                         return res.status(500).send({error:'Something went wrong, please try again'})
                     }
                     
-                    // jwt.sign({user}, config.secretKey, { expiresIn: '12h' } ,(err, token) => {
-                    //     if(err) {
-                    //     console.log(err) 
-                    //     return res.status(500).send({error: 'Could not create token'})
-                    //     } 
-                    //     return res.send({token, dbResponse})
-                    // })
                     return res.status(200).send({response: 'Success'})
                 })
             })
@@ -415,5 +442,26 @@ router.post('/user/coverImg', auth.checkToken, (req, res) => {
     })
 })
 
+
+router.put('/user/notifications', auth.checkToken, async (req, res) => {
+    const userCollection = db.collection('users')
+    const { user } = req.decoded
+    // const bla = await userCollection.find({_id: ObjectId(user._id),'notifications.notification.seen': 0}).project({'notifications':1}).toArray()
+    // return res.send({bla})
+    try{
+       const updatedUser =  await userCollection.findOneAndUpdate({_id: ObjectId(user._id), "notifications.notification.seen" : 0},
+
+    { $set: { "notifications.notification.$[inner].seen": 1 } },
+        { arrayFilters: [ { 'inner.seen': 0 } ],
+          upsert: true, multi:true }
+)
+       return res.send({response: 'notifications seen'})
+    }catch(err){
+        if(err){
+            console.log(err); 
+            return res.status(500).send({error: 'Something went wrong'});
+        }
+    }
+})
 
 module.exports = router;

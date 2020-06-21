@@ -15,6 +15,8 @@
 </style>
 
 <!-- ########################### -->
+
+{console.log(allPosts)}
 <div class="addPost">
     <form enctype='multipart/form-data' class="frmPost">
     <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
@@ -57,12 +59,14 @@ const handleChange = (event) => {
 }
 
 const convertUserPosts = () => {
-let aPosts = Array.from(posts)
-    aPosts.forEach(post => {
-        const date =  dateFromObjectId(post._id)
-         allPosts = [...allPosts, {...post,'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true  } ]
-         
-    })
+    if(posts){
+        let aPosts = Array.from(posts)
+            aPosts.forEach(post => {
+                const date =  dateFromObjectId(post._id)
+                 allPosts = [...allPosts, {...post,'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true  } ]
+                 
+            })
+    }
 }
 const fetchAllFriendPosts = async () => {
     try{

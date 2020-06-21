@@ -5,16 +5,17 @@
     right:0;
     height:100%;
     padding:6% 2% 2%;
-    width:15vw;
+    width:18vw;
     border-left: 1px solid rgba(0,0,0,.1);
     /* background:white; */
     overflow-y: scroll;
 }
 .contact{
     display: grid;
-    grid-template-columns: 4fr 10fr;
+    grid-template-columns: 3fr 10fr;
     align-items: center;
     cursor: pointer;
+    margin:.5em 0;
 }
 p{
     margin:0;

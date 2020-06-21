@@ -163,7 +163,7 @@
            <img  class="postImg" src={"http://localhost/postImg/"+ postImg}>
     {/if}
     <div class="likes">
-    {#if likes.length}
+    {#if likes && likes.length>0}
         <i class="fa fa-thumbs-up"></i> 
         <div class="likeCount">{likeCount()}</div>       
     {/if}

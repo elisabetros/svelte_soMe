@@ -127,12 +127,21 @@ input{
   border-radius: 50%;
 }
 .searchDropdown{
-  top: 6vh;
   width: 64.5%;
   right: 0 !important;
   height:auto;
 }
-
+.notificationDropdown {
+    right: -2.2vw !important;
+    width: 20vw;
+    top: 5vh !important;
+    padding: .8em 0 !important;
+    border-bottom: 1px solid #ddd;
+}
+.notificationDropdown h4{
+  padding: 0 .8em;
+  margin:.5em;
+}
 .dropDown{
   background:white;
   color:black;
@@ -162,7 +171,6 @@ input{
   text-decoration: underline;
 }
 
-
 .dropDown:after {
 	border-color: rgba(136, 183, 213, 0);
 	border-bottom-color: #fff;
@@ -179,6 +187,8 @@ input{
 </style>
 
 <!-- ########################### -->
+
+{console.log(notifications)}
 <Router url="{url}">
  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<nav>
@@ -223,14 +233,23 @@ input{
       </div>
       <div>
         <i class="far fa-bell" on:click={showNotifications}></i> 
-        {#if notifications}
+        {#if counter > 0}
           <div class="notification-counter">{notificationCounter()}</div> 
-          <div class="notificationDropdown dropDown hidden">
-            {#each notifications.friendRequests as request}
-              <Link to="/activitylog">{request.firstname} {request.lastname} sent you a friend request</Link>
-            {/each}
-      </div>           
         {/if}
+          <div class="notificationDropdown dropDown hidden">
+          <h4>Notifications</h4>
+          {#if notifications.friendRequests}
+            {#each notifications.friendRequests as request}
+              <Link to="/activitylog"><strong>{request.firstname} {request.lastname} </strong>sent you a friend request</Link>
+            {/each}
+          {/if}
+          {#if notifications.notification}
+            {#each notifications.notification as notification}
+              <Link to="/activitylog">{notification.message}</Link>
+            {/each}
+          {/if}
+      </div>           
+        <!-- {/if} -->
       </div>
       <div on:click={showDropDown}>
        <i class="fas fa-sort-down"></i>      
@@ -259,11 +278,23 @@ export let onLogout;
 export let onUpdate;
 export let _id;
 export let notifications;
+let counter= 0
 
-// let notificationCounter =""
 let notificationCounter = () => {
-  console.log(notifications)
-  return notifications.friendRequests.length
+  console.log(Object.keys(notifications))
+  Object.keys(notifications).forEach(key => {
+    if(notifications[key] === 'notification' && !notifications[key].seen){
+      counter = counter +notifications[key].length
+    }
+    else{
+      counter =""
+    }
+  })
+  if(!counter){
+     return counter =""
+  }else{
+    return counter
+  }
 }
 
 let searchStr = "";
