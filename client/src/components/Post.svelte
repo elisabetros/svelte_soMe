@@ -137,20 +137,22 @@
     .customLabel{
         width:80%;
     }
-    
+    a:visited, a{
+        color:black;
+    }
 </style>
 
 <!-- ########################### -->
 
-<div class="post" >
+<div class="post" use:links>
     <div class="user">
             <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture" alt="user image">
             {#if isLoggedIn}
                 <div class="status"></div>
             {/if}
-        <Link to={"/profile/"+userID}>
+        <a href={"/profile/"+userID}>
             <p><strong>{name}</strong></p>
-        </Link>
+        </a>
             <p class="time">{convertDate()}</p>
         {#if isUsers}
             <div class="editPost" on:click={showEditModel}>...</div>
@@ -216,7 +218,7 @@
 <script>
 
 import axios from 'axios'
- import { Link } from "svelte-routing";
+ import { links } from "svelte-routing";
 
 export let postContent;
 export let likes;

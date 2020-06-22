@@ -42,23 +42,26 @@ h4{
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+a, a:visited{
+    color:black
+}
 </style>
 
 <!-- ########################### -->
 
-<div class="left">
-    <Link to={"/profile/"+_id}>
+<div class="left" use:links>
+    <a href={"/profile/"+_id}>
         <div class="user">
             <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
             <p>{firstname} {lastname}</p>
         </div>
-    </Link>
-    <Link to="/">
+    </a>
+    <a href="/">
         <div class="news">
             <i class="far fa-image"></i>
             <p>News feed</p>
         </div>
-    </Link>
+    </a>
     <h4>Your Groups:</h4>
     <div class="group">
         <i class="fas fa-flag"></i><p>Catch the flag</p>
@@ -98,5 +101,5 @@ export let profilePicture
 export let firstname
 export let lastname
 export let _id
-import { Link } from 'svelte-routing'
+import { links } from 'svelte-routing'
 </script>

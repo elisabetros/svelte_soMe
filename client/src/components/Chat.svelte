@@ -29,7 +29,7 @@
 .closeChat{
     justify-self: right;
     font-size: 150%;
-    line-height: 18px; 
+    line-height: 30px; 
     cursor: pointer;
 }
 .chatContent{

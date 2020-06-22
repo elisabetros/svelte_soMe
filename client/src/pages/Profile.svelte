@@ -151,7 +151,7 @@
         {/if}
         <h1>{user.firstname} {user.lastname}</h1>
         {#if isUsers}
-            <div class="btn btnUpdate"><Link to="/updateprofile"><p>Update Information</p></Link></div>
+            <div class="btn btnUpdate" use:links><a href="/updateprofile"><p>Update Information</p></a></div>
         {:else}
             {#if friends}
                 {#if friends.includes(_id)}
@@ -189,7 +189,7 @@
 
 <script>
     import axios from 'axios'
-    import { Link } from "svelte-routing";
+    import { links } from "svelte-routing";
     import Post from '../components/Post.svelte'
 
     export let _id;

@@ -183,7 +183,9 @@ input{
 	border-width: 7px;
 	margin-left: -7px;
 }
-
+a:visited, a, a:hover{
+  color:white;
+}
 </style>
 
 <!-- ########################### -->
@@ -193,12 +195,12 @@ input{
  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<nav>
 
-    <div class="left">
-      <Link to="/">
+    <div class="left" use:links>
+      <a href="/" >
         <div class="logo">
           <i class="fas fa-utensil-spoon"></i> Clonebook
         </div>
-      </Link>
+      </a>
       <div>
         <form on:submit={handleSearch}>
           <div class="green">        
@@ -215,14 +217,14 @@ input{
     </div>
 
     <div class="middle">
-    <Link to={"/profile/"+_id}>
+    <a href={"/profile/"+_id}>
       <div class="username" >
         <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
         <p>{firstname}</p>    
       </div>
-    </Link>
+    </a>
       <div on:click={showMain}>
-        <Link to="/">Home</Link>
+        <a href="/" use:links>Home</a>
       </div>
               
     </div>
@@ -240,12 +242,12 @@ input{
           <h4>Notifications</h4>
           {#if notifications.friendRequests}
             {#each notifications.friendRequests as request}
-              <Link to="/activitylog"><strong>{request.firstname} {request.lastname} </strong>sent you a friend request</Link>
+              <a href="/activitylog"><strong>{request.firstname} {request.lastname} </strong>sent you a friend request</a>
             {/each}
           {/if}
           {#if notifications.notification}
             {#each notifications.notification as notification}
-              <Link to="/activitylog">{notification.message}</Link>
+              <a href="/activitylog">{notification.message}</a>
             {/each}
           {/if}
       </div>           
@@ -256,8 +258,8 @@ input{
       </div>  
       <div class="menuDropdown dropDown hidden">
           <p on:click={handleLogout}>Log out</p>
-          <Link to="/updateprofile">Update Information</Link>
-          <Link to="/activitylog">Activity Log</Link>
+          <a href="/updateprofile">Update Information</a>
+          <a href="/activitylog">Activity Log</a>
       </div>                
     </div>
 
@@ -267,7 +269,7 @@ input{
 
 <script>
   
-import { Router, Link } from "svelte-routing";
+import { Router, links } from "svelte-routing";
 import axios from 'axios'
 
 export let url = "";

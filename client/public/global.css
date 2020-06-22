@@ -26,7 +26,7 @@ a:hover {
 }
 
 a:visited {
-	color: inherit;
+	color: #000;
 }
 
 label {
@@ -206,4 +206,6 @@ input[type=file]{
 	align-self:center;
 	color:white;
 }
-  
+.post>.user> a:visited>p.svelte-1jundgj{
+	color:black !important;
+}
