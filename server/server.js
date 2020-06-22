@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const io = require('socket.io');
 
 const MongoClient = require('mongodb').MongoClient
 
@@ -23,6 +24,12 @@ MongoClient.connect(url, { useUnifiedTopology: true } ,(err, client) => {
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
+
+// ############################
+// socket.on('connection', (socket)=>{
+//     console.log('user connected');
+//     });
+
 
 // ############################
 

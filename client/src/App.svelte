@@ -8,6 +8,10 @@ import Left from './components/Left.svelte'
 import Profile from './pages/Profile.svelte'
 import ActivityLog from './pages/ActivityLog.svelte'
 import Chat from './components/Chat.svelte'
+import Loader from './components/Loader.svelte'
+
+import { user1 } from './data.js'
+console.log(user1)
 
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
@@ -17,6 +21,7 @@ $: update = false;
 
 let user = {}
 let chats = []
+let isLoading = true;
 
 export let url = "";
 
@@ -33,6 +38,7 @@ const checkIfUserOnline = async ()=>{
 			}		
 			isLoggedIn = true
 			console.log(user)
+			isLoading=false;
 		}catch(err){
 			if(err){console.log(err.response); return; }
 		}
@@ -71,31 +77,35 @@ const handleChat = (id) => {
 </script>
 
 <Router url="{url}">
-	{#if isLoggedIn}
-		<Nav {...user} onLogout={handleLogout} onUpdate={handleUpdate}/>
-	 <Route path="/updateprofile">
-			<UpdateProfile {...user}/>
-	 </Route> 
-	 <Route path="/">
-			<Main {...user}/>
-	 </Route> 
-	 <Route path="/profile/:id" let:params>
-			<Profile {...user} userID={params.id}/>
-	 </Route> 
-	 <Route path="/activitylog" >
-			<ActivityLog {...user} />
-	 </Route> 
-	<Contacts {...user} onChat={handleChat} />
-	<Left {...user} />
-	{#if chats}
-	<div class="chatContainer">
-		{#each chats as chat}
-			<Chat {...chat}/>
-		{/each}
-	</div>
-	{/if}
+	{#if isLoading}
+			<Loader />			
 	{:else}
+		{#if isLoggedIn}
+			<Nav {...user} onLogout={handleLogout} onUpdate={handleUpdate}/>
+			<Route path="/updateprofile">
+					<UpdateProfile {...user}/>
+			</Route> 
+			<Route path="/">
+					<Main {...user}/>
+			</Route> 
+			<Route path="/profile/:id" let:params>
+					<Profile {...user} userID={params.id}/>
+			</Route> 
+			<Route path="/activitylog" >
+					<ActivityLog {...user} />
+			</Route> 
+			<Contacts {...user} onChat={handleChat} />
+			<Left {...user} />
+			{#if chats}
+				<div class="chatContainer">
+					{#each chats as chat}
+						<Chat {...chat}/>
+					{/each}
+				</div>
+			{/if}
+		{:else}
 		<Signup  onLogin={handleLogin}/>
+		{/if}
 	{/if}
 
 	</Router>

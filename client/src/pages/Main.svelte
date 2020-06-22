@@ -38,6 +38,9 @@
 import Post from '../components/Post.svelte'
 import axios from 'axios'
 
+import { friendPosts } from '../data.js'
+console.log(friendPosts)
+
 export let posts;
 export let firstname;
 export let lastname;
