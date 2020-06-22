@@ -82,7 +82,7 @@ router.post('/user/register', async (req, res) => {
     })
 })
 
-router.post('/user/login', async (req, res) => {
+router.put('/user/login', async (req, res) => {
     console.log('login')
     const userCollection = db.collection('users')
     const { email, password } = req.body
@@ -106,20 +106,41 @@ router.post('/user/login', async (req, res) => {
         if(!isSame){
             return res.status(500).send({error: 'Wrong username or password'})
         }else{
-            userCollection.findOneAndUpdate({_id:user._id}, {$set:{isLoggedIn:true}}, (err, response) => {
-                if(err){
-                    console.log(err); 
-                    return res.status(500).send({error: 'Login failed'})
-                }
-                delete user.password
-                jwt.sign({user}, config.secretKey, { expiresIn: '24h' } ,(err, token) => {
-                    if(err) {
-                      console.log(err) 
-                     return res.status(500).send({error: 'Could not create token'})
-                } 
-                return res.status(200).send({token })
-                });
-            })
+            try{
+                // const friend = await userCollection.find({"friends.friendID": user._id.toString }).toArray()
+                // return res.send(friend)
+                // const userUpdate = await userCollection.findOneAndUpdate({ "_id":ObjectId(user._id)}, {$set:{'isLoggedIn': true}})
+                // const friendUpdate = await userCollection.updateMany({ "friends.friendID": user._id }, {$set:{'friends.$.isLoggedIn': true}})
+                // console.log({userUpdate, friendUpdate})
+                const bulkUpdateOps = [
+                    {
+                        "updateOne": {
+                            "filter": { "_id":ObjectId(user._id) },
+                            "update": { "$set": { "isLoggedIn": true} } 
+                        }
+                    },
+                    {
+                        "updateMany": {
+                            "filter": { "friends.friendID": user._id.toString() },
+                            "update": { "$set": { "friends.$.isLoggedIn": true } }
+                        }
+                    }
+                ];
+            const result = await userCollection.bulkWrite(bulkUpdateOps)
+             console.log(result)       
+          
+             delete user.password
+             jwt.sign({user}, config.secretKey, { expiresIn: '24h' } ,(err, token) => {
+                 if(err) {
+                   console.log(err) 
+                  return res.status(500).send({error: 'Could not create token'})
+             } 
+             return res.status(200).send({token })
+             });
+              
+           }catch(err){
+               if(err){console.log(err); return res.status(500).send({error:'Something went wrong'}); }
+           }
         }
     })
 })
@@ -143,18 +164,33 @@ router.get('/user', auth.checkToken, async (req, res) => {
 });
 
 
-
-
 router.put('/user/logout', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     console.log('logout')
     const { user } = req.decoded
-    console.log(user._id)
-   userCollection.findOneAndUpdate({_id: ObjectId(user._id)}, {$set:{isLoggedIn:false}}, (err, dbResponse) => {
-            if(err){console.log(err); return res.status(200).send({error: err});}
-            console.log(dbResponse)
-            return res.status(200).send({response: 'success'})
-        })
+    try{
+        const bulkUpdateOps = [
+            {
+                "updateOne": {
+                    "filter": { "_id":ObjectId(user._id) },
+                    "update": { "$set": { "isLoggedIn": false} } 
+                }
+            },
+            {
+                "updateMany": {
+                    "filter": { "friends.friendID": user._id },
+                    "update": { "$set": { "friends.$.isLoggedIn":  false } }
+                }
+            }
+        ];
+    const result = await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1})
+     console.log(result)       
+     return res.status(200).send({response: 'success'})
+      
+   }catch(err){
+       if(err){console.log(err); return res.status(500).send({error:'Something went wrong'}); }
+   }
+
 })
 
 router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
@@ -193,16 +229,11 @@ router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
                             }
                         }
                     ];
+                const result = await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1})
+                 console.log(result)       
+              
                     
-                  await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1}, (err, result) => {
-                        if(err){console.log(err); return res.status(500).send({error:err});}
-                        return res.status(200).send({result})
-                    })
-
-
-
-
-
+                  
                }catch(err){
                    if(err){console.log(err); return res.status(500).send({error:'Something went wrong'}); }
                }

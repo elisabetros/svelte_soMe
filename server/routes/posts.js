@@ -213,9 +213,8 @@ router.put('/updateComment', auth.checkToken, async (req, res) => {
 router.get('/posts', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const { user } = req.decoded
-    try{
-        
-        const friends = await userCollection.find({'friends': {$elemMatch: {'friendID': user._id}}}).project({'posts':1, 'firstname':1, 'lastname':1, 'profilePicture': 1, 'isLoggedId':1}).toArray()
+    try{        
+        const friends = await userCollection.find({'friends': {$elemMatch: {'friendID': user._id}}}).project({'posts':1, 'firstname':1, 'lastname':1, 'profilePicture': 1, 'isLoggedIn':1}).toArray()
        
         return res.send({friends})
 

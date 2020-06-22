@@ -59,6 +59,16 @@ app.use(postRoute)
 
 // ############################
 
+process.on("uncaughtException", (err, data) => {
+    if(err){
+        console.log("critical error, yet system keeps running")
+        console.log(data)
+        return;
+    }
+})
+
+// ############################
+
 const port = process.env.PORT || 80
 
 app.listen(port, (err) => {

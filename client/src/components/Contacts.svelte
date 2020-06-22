@@ -12,7 +12,7 @@
 }
 .contact{
     display: grid;
-    grid-template-columns: 3fr 10fr;
+    grid-template-columns: 3fr 10fr 1fr;
     align-items: center;
     cursor: pointer;
     margin:.5em 0;
@@ -23,6 +23,14 @@ p{
 h4{
      margin:8% 0 4% 0;
 }
+.status{
+       border:2px solid white;
+       background:green;
+       border-radius: 50%;
+       width:10px;
+       height:10px;
+       left:calc(45px + 2%);
+   }
 </style>
 
 <!-- ########################### -->
@@ -31,10 +39,13 @@ h4{
 <h4>Contacts</h4>
     {#if friends}
         {#each friends as friend}
+{console.log(friend.isLoggedIn)}
         <div class="contact" on:click={showChat}>
             <img src={"http://localhost/userImg/"+ friend.profilePicture} class="profilePicture small"/>
-            <p> {friend.firstname} {friend.lastname}</p>
-            
+            <p> {friend.firstname} {friend.lastname}</p>  
+            {#if friend.isLoggedIn}
+                <div class="status"></div>          
+            {/if}
         </div>
         {/each}
     {/if}

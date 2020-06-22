@@ -178,8 +178,8 @@ const validateAndLogin = async (event) => {
         isLoading = true;
     // console.log(errors)
       try{
-        const response = await axios.post('http://localhost:80/user/login', {email:loginEmail, password:loginPassword})
-        console.log(response.data.token)
+        const response = await axios.put('http://localhost:80/user/login', {email:loginEmail, password:loginPassword})
+        // console.log(response.data.token)
         sessionStorage.setItem('token', response.data.token)
         onLogin(true)
         isLoading = false;

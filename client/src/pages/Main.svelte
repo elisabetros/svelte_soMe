@@ -56,7 +56,7 @@ const handleDelete = (id) => {
 }
 const handleChange = (event) => {
     picture = event.target.files
-    console.log(event.target.files)
+    // console.log(event.target.files)
     if(event.target.name === 'picture'){
         let fileName= event.target.value.split("\\").pop();
         document.querySelector('.customLabel').innerHTML ="<span></span>"+ fileName;
@@ -68,7 +68,7 @@ const convertUserPosts = () => {
         let aPosts = Array.from(posts)
             aPosts.forEach(post => {
                 const date =  dateFromObjectId(post._id)
-                 allPosts = [...allPosts, {...post,'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true  } ]
+                 allPosts = [...allPosts, {...post,'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true, 'isLoggedIn': isLoggedIn  } ]
                  
             })
     }
@@ -81,9 +81,9 @@ const fetchAllFriendPosts = async () => {
             if(friend.hasOwnProperty('posts')){
                 friend.posts.map(post => {
                     const date = dateFromObjectId(post._id)
-                    console.log(date)
-                        console.log(friend.profilePicture)
-                        allPosts = [...allPosts, {...post,'userID': friend._id, 'name': friend.firstname + ' '+friend.lastname, 'profilePicture': friend.profilePicture, date, 'isUsers':false  } ]
+                    // console.log(date)
+                    // console.log(friend.profilePicture)
+                    allPosts = [...allPosts, {...post,'userID': friend._id, 'name': friend.firstname + ' '+friend.lastname, 'profilePicture': friend.profilePicture, date, 'isUsers':false, 'isLoggedIn':friend.isLoggedIn  } ]
                 
                 })
             }
@@ -110,8 +110,7 @@ const handlePost = async (event) => {
             formData.set('picture', picture[0]);
               try{
                 const response= await axios.post('http://localhost/postWithImage', formData,{ headers: {
-            'content-type': 'multipart/form-data' // do not forget this 
-      }})
+            'content-type': 'multipart/form-data' }})
                 console.log(response.data)
             }catch(err){
                 if(err){console.log(err.response); return; }
