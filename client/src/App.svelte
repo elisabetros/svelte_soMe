@@ -7,13 +7,16 @@ import Contacts from './components/Contacts.svelte'
 import Left from './components/Left.svelte'
 import Profile from './pages/Profile.svelte'
 import ActivityLog from './pages/ActivityLog.svelte'
+import Chat from './components/Chat.svelte'
 
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
 
 $: isLoggedIn= false
-let user = {}
 $: update = false;
+
+let user = {}
+let chats = []
 
 export let url = "";
 
@@ -59,6 +62,10 @@ const handleLogout = async (data) => {
 const handleUpdate = (data) => {
 	update = data
 }
+const handleChat = (id) => {
+	console.log('show chat window with ', id)
+	chats = [...chats, {'id':id}]
+}
 // console.log(user)
 
 </script>
@@ -78,10 +85,33 @@ const handleUpdate = (data) => {
 	 <Route path="/activitylog" >
 			<ActivityLog {...user} />
 	 </Route> 
-	<Contacts {...user} />
+	<Contacts {...user} onChat={handleChat} />
 	<Left {...user} />
+	{#if chats}
+	<div class="chatContainer">
+		{#each chats as chat}
+			<Chat {...chat}/>
+		{/each}
+	</div>
+	{/if}
 	{:else}
 		<Signup  onLogin={handleLogin}/>
 	{/if}
 
 	</Router>
+
+
+	<!-- ################# -->
+
+	<style>
+	.chatContainer{
+		position: fixed;
+		z-index: 20;
+		bottom:0;
+		right:18vw;
+		height:300px;
+		display: grid;
+		grid-gap:1em;
+		grid-template-rows: 1fr;
+	}
+	</style>

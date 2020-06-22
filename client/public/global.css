@@ -195,4 +195,15 @@ input[type=file]{
 	padding: .8em;
   }
 
+  .chat.minimize{
+    max-height:50px !important;
+    height:50px !important;
+    overflow: hidden !important;
+}
+
+.chatHeader>div a{
+    margin :0;
+	align-self:center;
+	color:white;
+}
   

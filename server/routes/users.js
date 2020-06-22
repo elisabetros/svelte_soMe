@@ -225,7 +225,7 @@ router.post('/user/profilePicture', auth.checkToken, async (req, res) => {
                         {
                             "updateMany": {
                                 "filter": { "friends.friendID": user._id },
-                                "update": { "$set": { "friends.$.profilePicure":  pictureName } }
+                                "update": { "$set": { "friends.$.profilePicture":  pictureName } }
                             }
                         }
                     ];

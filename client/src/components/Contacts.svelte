@@ -24,7 +24,7 @@ h4{
      margin:8% 0 4% 0;
 }
 .status{
-       border:2px solid white;
+       border:1px solid white;
        background:green;
        border-radius: 50%;
        width:10px;
@@ -39,8 +39,7 @@ h4{
 <h4>Contacts</h4>
     {#if friends}
         {#each friends as friend}
-{console.log(friend.isLoggedIn)}
-        <div class="contact" on:click={showChat}>
+        <div class="contact" on:click={()=>showChat(friend.friendID)}>
             <img src={"http://localhost/userImg/"+ friend.profilePicture} class="profilePicture small"/>
             <p> {friend.firstname} {friend.lastname}</p>  
             {#if friend.isLoggedIn}
@@ -55,9 +54,11 @@ h4{
 
 <script>
 export let friends;
+export let onChat;
 
-const showChat = () => {
+const showChat = (id) => {
     console.log('chat')
+    onChat(id)
 }
 if(friends){
     friends.forEach(friend => {
