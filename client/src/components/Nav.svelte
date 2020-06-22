@@ -190,7 +190,7 @@ a:visited, a, a:hover{
 
 <!-- ########################### -->
 
-{console.log(notifications)}
+<!-- {console.log(notifications)} -->
 <Router url="{url}">
  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<nav>
@@ -239,8 +239,9 @@ a:visited, a, a:hover{
           <div class="notification-counter">{notificationCounter()}</div> 
         {/if}
           <div class="notificationDropdown dropDown hidden">
+          {#if notifications}
           <h4>Notifications</h4>
-          {#if notifications.friendRequests}
+          {#if notifications.hasOwnProperty('friendRequests')}
             {#each notifications.friendRequests as request}
               <a href="/activitylog"><strong>{request.firstname} {request.lastname} </strong>sent you a friend request</a>
             {/each}
@@ -250,6 +251,7 @@ a:visited, a, a:hover{
               <a href="/activitylog">{notification.message}</a>
             {/each}
           {/if}
+        {/if}
       </div>           
         <!-- {/if} -->
       </div>

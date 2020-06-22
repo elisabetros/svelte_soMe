@@ -10,8 +10,8 @@ import ActivityLog from './pages/ActivityLog.svelte'
 import Chat from './components/Chat.svelte'
 import Loader from './components/Loader.svelte'
 
-import { user1 } from './data.js'
-console.log(user1)
+// import { user1 } from './data.js'
+// console.log(user1)
 
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
@@ -26,22 +26,28 @@ let isLoading = true;
 export let url = "";
 
 const checkIfUserOnline = async ()=>{
+	console.log('message')
 	if(sessionStorage.getItem('token')){
 		let token = sessionStorage.getItem('token')		
 		axios.defaults.headers.common = {'Authorization': `bearer ${token}`}
 		try{
 			const response = await axios('http://localhost/user')
-			// console.log(response)
-			user = await response.data.user
-			if(!user.profilePicture){
-  				user.profilePicture = 'standard.png'
-			}		
-			isLoggedIn = true
-			console.log(user)
-			isLoading=false;
+			console.log(response)
+			// if(response.data.token){
+				isLoggedIn = true
+				console.log(user)
+				isLoading=false;
+				user = await response.data.user
+				if(!user.profilePicture){
+					  user.profilePicture = 'standard.png'
+				}		
+
+			// }
 		}catch(err){
 			if(err){console.log(err.response); return; }
 		}
+	}else{
+		isLoading = false
 	}
 }
 
@@ -68,9 +74,11 @@ const handleLogout = async (data) => {
 const handleUpdate = (data) => {
 	update = data
 }
-const handleChat = (id) => {
-	console.log('show chat window with ', id)
-	chats = [...chats, {'id':id}]
+const handleChat = (data) => {
+	// console.log('show chat window with ', id)
+	console.log(data)
+	chats = [...chats, {...data}]
+	console.log(chats)
 }
 // console.log(user)
 

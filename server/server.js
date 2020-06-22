@@ -1,6 +1,10 @@
+const port = process.env.PORT || 80
+
+
 const express = require('express')
 const app = express()
-const io = require('socket.io');
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
 const MongoClient = require('mongodb').MongoClient
 
@@ -26,9 +30,28 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
 // ############################
-// socket.on('connection', (socket)=>{
-//     console.log('user connected');
-//     });
+let users = {};
+io.on('connection', socket => {
+    // console.log('new user')
+    socket.on('private-chat', data => {
+        socket.id = data;
+        users[socket.id] = socket;
+    })
+    socket.on('new-user', name => {
+        users[socket.id] = name
+        socket.broadcast.emit('user-connected', name)
+    })
+    // socket.emit('chat-message', 'Hello world')
+    socket.on('send-chat-message', message => {
+        // console.log(message)
+       socket.broadcast.emit('chat-message',{message: message, name: users[socket.id]})
+    })
+    socket.on('disconnect', () => {
+        // console.log(message)
+       socket.broadcast.emit('user-disconnected', users[socket.id])
+       delete users[socket.id]
+    })
+})
 
 
 // ############################
@@ -76,9 +99,8 @@ process.on("uncaughtException", (err, data) => {
 
 // ############################
 
-const port = process.env.PORT || 80
 
-app.listen(port, (err) => {
+server.listen(port, (err) => {
     if(err){console.log("server couldn't connect");return;}
     console.log('server running on port', port)
 })

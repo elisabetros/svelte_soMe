@@ -10,21 +10,24 @@ let userPosts;
 
 async function fetchUser(){
 	try{
-		 userResponse = await axios('http://localhost/user/')
-		console.log(userResponse.data)
+		 let response = await axios('http://localhost/user/')
+		 userResponse = await response.data.user
+		// console.log(userResponse.data)
 	}catch(err){
 		if(err){console.log(err); }
 	}
 }
 async function fetchPosts(){
 	try{
-		userPosts = await axios('http://localhost/posts/')
-	   console.log(userPosts.data)
+		let response = await axios('http://localhost/posts/')
+		userPosts = await response.data
+	//    console.log(userPosts.data)
    }catch(err){
 	   if(err){console.log(err); }
    }
 }
+
 fetchUser()
 fetchPosts()
-export let user1 = writable({userResponse})
+export let user = writable({userResponse})
 export let friendPosts = writable({userPosts})

@@ -39,23 +39,8 @@
     height: 200px;
     align-content:end;
 }
-.chatContent p{
-    border-radius: 5px;
-    background-color:#009688;
-    color:white;
-    margin: 0;
-    max-width: 164px;
-    font-size: 13px;
-    line-height: 16px;
-    padding:.1em;
-        overflow-wrap: break-word;
-}
-p.outgoing{
-    justify-self: left;
-}
-p.incoming{
-    justify-self: right
-}
+
+
 input{
     width: 100%;
     font-size: 80%;
@@ -81,8 +66,8 @@ form > i{
 <div class={'chat ' + 'chat-'+id} id={id}>
     <div class="chatHeader" on:click={minimizeChat}>
         <div class="user">
-            <img src="http://localhost/userImg/standard.png" alt="user image" class="profilePicture small">
-            <Link to={'/profile/'+ id}> firstname lastname</Link>
+            <img src={"http://localhost/userImg/"+ profilePicture} alt="user image" class="profilePicture small">
+            <Link to={'/profile/'+ id}> {firstname} {lastname}</Link>
         </div>
         <span class="closeChat" on:click={minimizeChat}>×</span>
     </div>
@@ -98,16 +83,48 @@ form > i{
 
 <!-- ########################### -->
 
+
 <script>
 import { Link } from "svelte-routing";
-export let id;
+import io from 'socket.io-client';
 
+export let id;
+export let firstname;
+export let lastname;
+export let profilePicture;
+export let _id;
+
+const roomName = `${id}-${_id}`
+
+const socket = io()
 let chatTxt = ""
+// socket.emit('private-chat', id)
 
 const handleSend = (event) => {
     event.preventDefault()
     console.log(chatTxt)
+    const message = chatTxt
+    appendMessage(message, 'outgoing')
+    socket.emit('send-chat-message', roomName, message);
+    document.querySelector('.chatTxt').value= ""
 }
+
+function appendMessage(message, type) {
+    const messageContainer = document.querySelector('.chatContent')
+    const messageElement = document.createElement('p');
+    messageElement.className = type
+    messageElement.innerText = message;
+    messageContainer.append(messageElement)
+}
+socket.on('chat-message', data => {
+    appendMessage(`${data.name}: ${data.message}`,'incoming')
+})
+// socket.on('user-connected', name => {
+//     appendMessage(`${name} connected`, 'incoming')
+// })
+// socket.on('user-disconnected', name => {
+//     appendMessage(`${name} disconnected`, 'incoming')
+// })
 
 const minimizeChat = () => {
     console.log(document.querySelector(`.chat-${id}`))

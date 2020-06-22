@@ -58,7 +58,16 @@ export let onChat;
 
 const showChat = (id) => {
     console.log('chat')
-    onChat(id)
+    const user = friends.find(friend=> friend.friendID === id)
+    // console.log(user)
+    let data = {
+        firstname: user.firstname,
+        lastname: user.lastname,
+        id: user.friendID,
+        profilePicture: user.profilePicture
+    }
+    console.log(data)
+    onChat(data)
 }
 if(friends){
     friends.forEach(friend => {
