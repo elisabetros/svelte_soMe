@@ -131,7 +131,7 @@
         top:40%;
     }
     .frmPost{
-    grid-template-columns: 5fr 10fr !important;
+    grid-template-columns: 5fr 5fr 5fr !important;
     }
     
     .customLabel{
@@ -139,6 +139,9 @@
     }
     a:visited, a{
         color:black;
+    }
+    .btnDelete{
+        color:red;
     }
 </style>
 
@@ -206,7 +209,7 @@
                 <textarea type="text" value={postContent} name="post" on:change={handleChange}/>
                 <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
                 <button on:click={handleEdit}>Edit Post</button>
-                <button on:click={handleDelete}>Delete Post</button>
+                <button class="btnDelete" on:click={handleDelete}>Delete Post</button>
             </form>
         </div>
     </div>

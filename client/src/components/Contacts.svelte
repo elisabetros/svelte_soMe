@@ -47,14 +47,14 @@ h4{
             {/if}
         </div>
         {/each}
-    {/if}
+    {/if} 
 </div>
 
 <!-- ########################### -->
 
 <script>
 import { user } from '../data.js'
-// export let friends;
+// // export let friends;
 export let onChat;
 
 const showChat = (id) => {
@@ -70,12 +70,14 @@ const showChat = (id) => {
     console.log(data)
     onChat(data)
 }
-if($user.friends){
-    $user.friends.forEach(friend => {
-        console.log(friend)
-        if(!friend.profilePicture){
-            friend.profilePicture = 'standard.png'
-        }
-    });
-}
+setTimeout(() => {
+    if($user.friends){
+        $user.friends.forEach(friend => {
+            console.log(friend)
+            if(!friend.profilePicture){
+                friend.profilePicture = 'standard.png'
+            }
+        });
+    }
+}, 1000)
 </script>

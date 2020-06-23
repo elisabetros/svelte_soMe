@@ -5,6 +5,8 @@ const express = require('express')
 const app = express()
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
+const path = require("path");
+const fs = require("fs");
 
 const MongoClient = require('mongodb').MongoClient
 
@@ -13,7 +15,7 @@ const MongoClient = require('mongodb').MongoClient
 const url = 'mongodb://localhost:27017'
 const dbName ='clonebook'
 global.db = ''
-global.usersCollection;
+global.userCollection;
 
 // Connecting to server
 MongoClient.connect(url, { useUnifiedTopology: true } ,(err, client) => {
@@ -23,7 +25,7 @@ MongoClient.connect(url, { useUnifiedTopology: true } ,(err, client) => {
     }
     console.log('connected to mongo')
     db = client.db(dbName)
-    usersCollection = db.collection("users");
+    userCollection = db.collection("users");
 })
 
 
@@ -54,8 +56,8 @@ io.on("connection", (socket) => {
     console.log(from, to, message);
     let timestamp = Math.round(new Date().getTime() / 1000);
 
-    let toUser = await usersCollection.findOne({ _id: new ObjectID(to) });
-    let fromUser = await usersCollection.findOne({ _id: new ObjectID(from) });
+    let toUser = await userCollection.findOne({ _id: new ObjectID(to) });
+    let fromUser = await userCollection.findOne({ _id: new ObjectID(from) });
 
     // console.log(toUser);
     // console.log(fromUser);
@@ -170,12 +172,14 @@ app.use('/coverImg',express.static(__dirname + '/pictures/coverPictures'));
 
 // ############################
 
-const userRoute = require('./routes/users')
-const postRoute = require('./routes/posts');
+const userRoute = require(path.join(__dirname,'routes', 'users')) 
+const postRoute = require(path.join(__dirname,'routes', 'posts')) 
+const chatRoute = require(path.join(__dirname,'routes', 'chats')) 
 const { ObjectID, ObjectId } = require('mongodb');
 
 app.use(userRoute)
 app.use(postRoute)
+app.use(chatRoute)
 
 // ############################
 

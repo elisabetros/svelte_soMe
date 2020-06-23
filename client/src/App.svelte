@@ -11,18 +11,17 @@ import Chat from './components/Chat.svelte'
 import Loader from './components/Loader.svelte'
 
 import { user } from './data.js'
+import { chats } from './data.js'
 // console.log(user1)
 
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
-import io from 'socket.io-client';
-const socket = io('http://localhost');
+
 
 $: isLoggedIn= false
-$: update = false;
 
 // let user = {}
-let chats = []
+// $: chats = $chats
 let isLoading = true;
 
 export let url = "";
@@ -40,10 +39,12 @@ const checkIfUserOnline = async ()=>{
 				console.log(user)
 				isLoading=false;
 				$user = await response.data.user
+				console.log($user)
 				if(!$user.profilePicture){
 					  $user.profilePicture = 'standard.png'
 				}	
-				socket.emit('come-online', user._id)	
+				console.log($user.posts)
+				// socket.emit('come-online', user._id)	
 
 			// }
 		}catch(err){
@@ -75,28 +76,17 @@ const handleLogout = async (data) => {
 		if(err){console.log(err.respons); return; }
 	}
 }
-const handleUpdate = (data) => {
-	update = data
-}
+
 const handleOpenChat = (data) => {
 	// console.log('show chat window with ', id)
-	console.log(data)
-	chats = [...chats, {...data}]
-	console.log(chats)
+	$chats = [...$chats, {...data}]
+	console.log($chats)
 }
 
-const handleChat = (message, friendID, loggedInUser) => {
-	socket.emit('send-chat-message', message, friendID, loggedInUser);
-}
 
-socket.on('chat-message', (message, sender) => {
-	console.log('chat')
-    chats = [...chats, {sender, message}]
-})
 
-const handleUnreadChats = (data) => {
-	chats = [...chats, {data}]
-}
+
+
 </script>
 
 <Router url="{url}">
@@ -104,12 +94,12 @@ const handleUnreadChats = (data) => {
 			<Loader />			
 	{:else}
 		{#if isLoggedIn}
-			<Nav {...$user} onLogout={handleLogout} onUpdate={handleUpdate} onOpenChat={handleUnreadChats}/>
+			<Nav {...$user} onLogout={handleLogout} />
 			<Route path="/updateprofile">
 					<UpdateProfile />
 			</Route> 
 			<Route path="/">
-					<Main {...$user}/>
+					<Main {...$user} posts={$user.posts}/>
 			</Route> 
 			<Route path="/profile/:id" let:params>
 					<Profile {...$user} userID={params.id}/>
@@ -121,8 +111,8 @@ const handleUnreadChats = (data) => {
 			<Left />
 			{#if chats}
 				<div class="chatContainer">
-					{#each chats as chat}
-						<Chat {...chat} userID={$user._id} onSendChat={handleChat}/>
+					{#each $chats as chat}
+						<Chat chat={chat} userID={$user._id} />
 					{/each}
 				</div>
 			{/if}

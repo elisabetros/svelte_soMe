@@ -3,7 +3,7 @@
     display: grid;
     margin:3vh auto 0;
     justify-content: center;
-    grid-gap: 2%;
+    grid-gap: 2em;
 }
 .addPost{
     width: 55vw;
@@ -31,13 +31,15 @@
 
 {/each}
 </div>
-
+{console.log(posts)}
 <!-- ########################### -->
 
 <script>
 import Post from '../components/Post.svelte'
 import axios from 'axios'
-import { user } from '../data.js'
+// import { user } from '../data.js'
+import { onMount } from 'svelte'
+// import { posts } from '../data.js'
 
 export let posts;
 export let firstname;
@@ -49,6 +51,13 @@ let post = ""
 let picture;
 let allPosts = [];
 
+onMount(async () => { 
+    console.log(posts)   
+    setTimeout(()=>{
+        convertUserPosts()
+        fetchAllFriendPosts()
+    },50) 
+})
 const handleDelete = (id) => {
     newPosts = allPosts.filter(post => {
         if(post._id !== id) return post
@@ -65,13 +74,14 @@ const handleChange = (event) => {
 }
 
 const convertUserPosts = () => {
-    if($user.posts){
-        let aPosts = Array.from($user.posts)
+    // console.log($user)
+    if(posts){
+        console.log(posts)
+        let aPosts = Array.from(posts)
             aPosts.forEach(post => {
                 const date =  dateFromObjectId(post._id)
                  allPosts = [...allPosts, {...post,'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true, 'isLoggedIn': isLoggedIn  } ]
-                 
-            })
+        })
     }
 }
 const fetchAllFriendPosts = async () => {
@@ -85,7 +95,6 @@ const fetchAllFriendPosts = async () => {
                     // console.log(date)
                     // console.log(friend.profilePicture)
                     allPosts = [...allPosts, {...post,'userID': friend._id, 'name': friend.firstname + ' '+friend.lastname, 'profilePicture': friend.profilePicture, date, 'isUsers':false, 'isLoggedIn':friend.isLoggedIn  } ]
-                
                 })
             }
             allPosts = orderPosts()
@@ -97,13 +106,15 @@ const fetchAllFriendPosts = async () => {
 const handlePost = async (event) => {
     event.preventDefault()
     if(post || picture){
+        let date = new Date()
+        date = date.toString().substring(0,21)
         console.log(post)
         if(!picture){
             try{
                 const response= await axios.post('http://localhost/post', {post})
                 console.log(response.data)
-                $user.posts.push({'postContent': post})
-                allPosts.push({'postContent': post})
+                allPosts = [...allPosts, {'postContent': post, 'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true, 'isLoggedIn': isLoggedIn  } ]
+                orderPosts()
                 document.querySelector('textarea').value = ""
             }catch(err){
                 if(err){console.log(err.response); return; }
@@ -116,9 +127,10 @@ const handlePost = async (event) => {
                 const response= await axios.post('http://localhost/postWithImage', formData,{ headers: {
                 'content-type': 'multipart/form-data' }})
                 console.log(response.data)
-                $user.posts.push({'postContent': post, 'postImg': response.data.response})
-                allPosts.push({'postContent': post, 'postImg': response.data.response})
-                document.querySelector('textarea').value = ""
+                
+                allPosts = [...allPosts, {'postContent': post, 'postImg': response.data.response, 'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true, 'isLoggedIn': isLoggedIn  } ]
+               orderPosts()
+               document.querySelector('textarea').value = ""
             }catch(err){
                 if(err){console.log(err.response); return; }
             }
@@ -139,8 +151,6 @@ const dateFromObjectId = function (objectId) {
     return date
 };
 
-convertUserPosts()
-fetchAllFriendPosts()
 
 
 </script>
