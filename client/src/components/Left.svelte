@@ -50,10 +50,10 @@ a, a:visited{
 <!-- ########################### -->
 
 <div class="left" use:links>
-    <a href={"/profile/"+_id}>
+    <a href={"/profile/"+$user._id}>
         <div class="user">
-            <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
-            <p>{firstname} {lastname}</p>
+            <img src={"http://localhost/userImg/"+ $user.profilePicture} class="profilePicture small"/>
+            <p>{$user.firstname} {$user.lastname}</p>
         </div>
     </a>
     <a href="/">
@@ -97,9 +97,10 @@ a, a:visited{
 <!-- ########################### -->
 
 <script>
-export let profilePicture
-export let firstname
-export let lastname
-export let _id
+// export let profilePicture
+// export let firstname
+// export let lastname
+// export let _id
 import { links } from 'svelte-routing'
+import { user } from '../data.js'
 </script>

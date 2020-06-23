@@ -190,7 +190,7 @@ input[type=file]{
 .dropDown a:last-child {
 	border-bottom: none;
   }
-  .notificationDropdown a{
+  .notificationDropdown a, .chatDropdown p{
 	background-color:#e2e5e8;
 	padding: .8em;
   }

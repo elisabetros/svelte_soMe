@@ -10,16 +10,18 @@ import ActivityLog from './pages/ActivityLog.svelte'
 import Chat from './components/Chat.svelte'
 import Loader from './components/Loader.svelte'
 
-// import { user1 } from './data.js'
+import { user } from './data.js'
 // console.log(user1)
 
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
+import io from 'socket.io-client';
+const socket = io('http://localhost');
 
 $: isLoggedIn= false
 $: update = false;
 
-let user = {}
+// let user = {}
 let chats = []
 let isLoading = true;
 
@@ -37,10 +39,11 @@ const checkIfUserOnline = async ()=>{
 				isLoggedIn = true
 				console.log(user)
 				isLoading=false;
-				user = await response.data.user
-				if(!user.profilePicture){
-					  user.profilePicture = 'standard.png'
-				}		
+				$user = await response.data.user
+				if(!$user.profilePicture){
+					  $user.profilePicture = 'standard.png'
+				}	
+				socket.emit('come-online', user._id)	
 
 			// }
 		}catch(err){
@@ -66,6 +69,7 @@ const handleLogout = async (data) => {
 		if(response.data.response === 'success'){
 			isLoggedIn = data
 			sessionStorage.clear()
+			socket.emit('disconnect')
 		}
 	}catch(err){
 		if(err){console.log(err.respons); return; }
@@ -74,14 +78,25 @@ const handleLogout = async (data) => {
 const handleUpdate = (data) => {
 	update = data
 }
-const handleChat = (data) => {
+const handleOpenChat = (data) => {
 	// console.log('show chat window with ', id)
 	console.log(data)
 	chats = [...chats, {...data}]
 	console.log(chats)
 }
-// console.log(user)
 
+const handleChat = (message, friendID, loggedInUser) => {
+	socket.emit('send-chat-message', message, friendID, loggedInUser);
+}
+
+socket.on('chat-message', (message, sender) => {
+	console.log('chat')
+    chats = [...chats, {sender, message}]
+})
+
+const handleUnreadChats = (data) => {
+	chats = [...chats, {data}]
+}
 </script>
 
 <Router url="{url}">
@@ -89,30 +104,30 @@ const handleChat = (data) => {
 			<Loader />			
 	{:else}
 		{#if isLoggedIn}
-			<Nav {...user} onLogout={handleLogout} onUpdate={handleUpdate}/>
+			<Nav {...$user} onLogout={handleLogout} onUpdate={handleUpdate} onOpenChat={handleUnreadChats}/>
 			<Route path="/updateprofile">
-					<UpdateProfile {...user}/>
+					<UpdateProfile />
 			</Route> 
 			<Route path="/">
-					<Main {...user}/>
+					<Main {...$user}/>
 			</Route> 
 			<Route path="/profile/:id" let:params>
-					<Profile {...user} userID={params.id}/>
+					<Profile {...$user} userID={params.id}/>
 			</Route> 
 			<Route path="/activitylog" >
-					<ActivityLog {...user} />
+					<ActivityLog {...$user} />
 			</Route> 
-			<Contacts {...user} onChat={handleChat} />
-			<Left {...user} />
+			<Contacts onChat={handleOpenChat} />
+			<Left />
 			{#if chats}
 				<div class="chatContainer">
 					{#each chats as chat}
-						<Chat {...chat}/>
+						<Chat {...chat} userID={$user._id} onSendChat={handleChat}/>
 					{/each}
 				</div>
 			{/if}
 		{:else}
-		<Signup  onLogin={handleLogin}/>
+		<Signup onLogin={handleLogin}/>
 		{/if}
 	{/if}
 

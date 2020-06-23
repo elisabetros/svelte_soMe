@@ -131,14 +131,19 @@ input{
   right: 0 !important;
   height:auto;
 }
+.notificationDropdown, .chatDropdown {
+  width: 20vw;
+  padding: .8em 0 !important;
+  top: 5vh !important;
+}
+.chatDropdown {
+  right: -1.5vw !important;
+}
 .notificationDropdown {
     right: -2.2vw !important;
-    width: 20vw;
-    top: 5vh !important;
-    padding: .8em 0 !important;
     border-bottom: 1px solid #ddd;
 }
-.notificationDropdown h4{
+.notificationDropdown h4, .chatDropdown h4{
   padding: 0 .8em;
   margin:.5em;
 }
@@ -223,15 +228,25 @@ a:visited, a, a:hover{
         <p>{firstname}</p>    
       </div>
     </a>
-      <div on:click={showMain}>
+      <div>
         <a href="/" use:links>Home</a>
       </div>
               
     </div>
     <div class="right">
       <div>
-        <i class="far fa-comment"></i>
-        <div class="chat-counter">1</div>       
+        <i class="far fa-comment" on:click={showUnSeenChats}></i>
+        {#if chats}
+          <div class="chat-counter">{chats.length}</div>       
+        {/if}
+        <div class="chatDropdown dropDown hidden">
+         <h4>Messages</h4>
+          {#if chats}
+            {#each chats as chat}
+              <p on:click={()=>openChat(chat.fromID)}><strong>{chat.from}:</strong> {chat.message}</p>
+            {/each}
+          {/if}
+        </div>
       </div>
       <div>
         <i class="far fa-bell" on:click={showNotifications}></i> 
@@ -267,6 +282,9 @@ a:visited, a, a:hover{
 
   </nav>
 </Router>
+{
+  console.log(chats)
+}
 <!-- ########################### -->
 
 <script>
@@ -276,14 +294,19 @@ import axios from 'axios'
 
 export let url = "";
 export let firstname;
-export let lastname;
 export let profilePicture;
 export let onLogout;
-export let onUpdate;
 export let _id;
 export let notifications;
+export let chats;
+export let userChats;
+
 let counter= 0
 
+const openChat = (senderID) => {
+  let data = chats.find(chat => chat.fromID === senderID)
+  userChats(data)
+}
 let notificationCounter = () => {
   console.log(Object.keys(notifications))
   Object.keys(notifications).forEach(key => {
@@ -301,16 +324,18 @@ let notificationCounter = () => {
   }
 }
 
-let searchStr = "";
+let searchStr = ""
 $: searchUsers = ""
 
-
+const showUnSeenChats = () => {
+  document.querySelector('.chatDropdown').classList.toggle('hidden')
+}
 const showNotifications = () => {
- console.log('drop down')
+//  console.log('drop down')
  document.querySelector('.notificationDropdown').classList.toggle('hidden')
 }
 const showDropDown = () => {
- console.log('drop down')
+//  console.log('drop down')
  document.querySelector('.menuDropdown').classList.toggle('hidden')
 }
 const handleLogout = () => {
@@ -321,11 +346,6 @@ const handleUpdate = () => {
   onUpdate(true)
   showDropDown()
 }
-
-const showMain = () => {
-  onUpdate(false)
-}
-
 
 const handleSearch = async (event) => {
   event.preventDefault()

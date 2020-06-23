@@ -37,9 +37,7 @@
 <script>
 import Post from '../components/Post.svelte'
 import axios from 'axios'
-
-import { friendPosts } from '../data.js'
-console.log(friendPosts)
+import { user } from '../data.js'
 
 export let posts;
 export let firstname;
@@ -67,8 +65,8 @@ const handleChange = (event) => {
 }
 
 const convertUserPosts = () => {
-    if(posts){
-        let aPosts = Array.from(posts)
+    if($user.posts){
+        let aPosts = Array.from($user.posts)
             aPosts.forEach(post => {
                 const date =  dateFromObjectId(post._id)
                  allPosts = [...allPosts, {...post,'userID':_id, 'name': firstname +' ' + lastname, 'profilePicture': profilePicture, date, 'isUsers':true, 'isLoggedIn': isLoggedIn  } ]
@@ -104,6 +102,9 @@ const handlePost = async (event) => {
             try{
                 const response= await axios.post('http://localhost/post', {post})
                 console.log(response.data)
+                $user.posts.push({'postContent': post})
+                allPosts.push({'postContent': post})
+                document.querySelector('textarea').value = ""
             }catch(err){
                 if(err){console.log(err.response); return; }
             }
@@ -113,8 +114,11 @@ const handlePost = async (event) => {
             formData.set('picture', picture[0]);
               try{
                 const response= await axios.post('http://localhost/postWithImage', formData,{ headers: {
-            'content-type': 'multipart/form-data' }})
+                'content-type': 'multipart/form-data' }})
                 console.log(response.data)
+                $user.posts.push({'postContent': post, 'postImg': response.data.response})
+                allPosts.push({'postContent': post, 'postImg': response.data.response})
+                document.querySelector('textarea').value = ""
             }catch(err){
                 if(err){console.log(err.response); return; }
             }

@@ -37,8 +37,8 @@ h4{
 
 <div class="contacts">
 <h4>Contacts</h4>
-    {#if friends}
-        {#each friends as friend}
+    {#if $user.friends}
+        {#each $user.friends as friend}
         <div class="contact" on:click={()=>showChat(friend.friendID)}>
             <img src={"http://localhost/userImg/"+ friend.profilePicture} class="profilePicture small"/>
             <p> {friend.firstname} {friend.lastname}</p>  
@@ -53,24 +53,25 @@ h4{
 <!-- ########################### -->
 
 <script>
-export let friends;
+import { user } from '../data.js'
+// export let friends;
 export let onChat;
 
 const showChat = (id) => {
     console.log('chat')
-    const user = friends.find(friend=> friend.friendID === id)
-    // console.log(user)
+    const friend = $user.friends.find(friend=> friend.friendID === id)
+    // console.log(friend)
     let data = {
-        firstname: user.firstname,
-        lastname: user.lastname,
-        id: user.friendID,
-        profilePicture: user.profilePicture
+        firstname: friend.firstname,
+        lastname: friend.lastname,
+        id: friend.friendID,
+        profilePicture: friend.profilePicture
     }
     console.log(data)
     onChat(data)
 }
-if(friends){
-    friends.forEach(friend => {
+if($user.friends){
+    $user.friends.forEach(friend => {
         console.log(friend)
         if(!friend.profilePicture){
             friend.profilePicture = 'standard.png'

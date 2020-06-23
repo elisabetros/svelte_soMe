@@ -50,16 +50,16 @@
         <h2>General Settings</h2>
     <div>
         <p>Name</p>
-        <p>{firstname} {lastname}</p>
+        <p>{$user.firstname} {$user.lastname}</p>
         <button on:click={()=>showForm('frmName')}>Change</button>
           <form class="hidden" id="frmName">
           <label>
             <p>Firstname</p>
-            <input type="text" name="newFirstname"  value={firstname} on:change={handleChange}>
+            <input type="text" name="newFirstname"  value={$user.firstname} on:change={handleChange}>
           </label>
           <label>
             <p>Lastname</p>
-            <input type="text" name="newLastname"  value={lastname} on:change={handleChange}>
+            <input type="text" name="newLastname"  value={$user.lastname} on:change={handleChange}>
           </label>
           <div class="btnWrapper">
             <button class ="btnCancel"  on:click={()=>showForm('frmName')}>Cancel</button>
@@ -69,12 +69,12 @@
     </div>
     <div>
         <p>Contact Information</p>
-        <p>{email}</p>
+        <p>{$user.email}</p>
         <button on:click={()=>showForm('frmEmail')}>Change</button>
           <form class="hidden" id="frmEmail">
           <label>
             <p>Email</p>
-            <input type="email" name="newEmail"  value={email} on:change={handleChange}>
+            <input type="email" name="newEmail"  value={$user.email} on:change={handleChange}>
           </label>
          <div class="btnWrapper">
             <button class ="btnCancel" on:click={()=>showForm('frmEmail')}>Cancel</button>
@@ -94,10 +94,12 @@
 
 <script>
     import axios from 'axios'
-    export let firstname;
-    export let lastname;
-    export let email;
-     let values = {newEmail: email, newFirstname: firstname, newLastname: lastname};
+
+    import { user } from '../data.js'
+    // export let firstname;
+    // export let lastname;
+    // export let email;
+     let values = {newEmail: $user.email, newFirstname: $user.firstname, newLastname: $user.lastname};
 
 
     const showForm = (id) => {
@@ -121,6 +123,10 @@
                 const response = await axios.put('http://localhost/user/update', {...values})
                 console.log(response)
                 sessionStorage.setItem('token', response.data.token)
+                $user.firstname = values.newFirstname
+                $user.lastname = values.newLastname
+                $user.email = values.newEmail
+                
             }catch(err){
                 if(err){console.log(err.response); return; }
             }

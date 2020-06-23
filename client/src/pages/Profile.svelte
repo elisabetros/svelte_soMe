@@ -192,6 +192,7 @@
     import { links } from "svelte-routing";
     import Post from '../components/Post.svelte'
 
+    // import { user } from '../data.js'
     export let _id;
     export let userID;
     export let friends;

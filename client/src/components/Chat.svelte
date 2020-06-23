@@ -69,11 +69,9 @@ form > i{
             <img src={"http://localhost/userImg/"+ profilePicture} alt="user image" class="profilePicture small">
             <Link to={'/profile/'+ id}> {firstname} {lastname}</Link>
         </div>
-        <span class="closeChat" on:click={minimizeChat}>×</span>
+        <span class="closeChat" on:click={closeChat}>×</span>
     </div>
     <div class="chatContent">
-    <p class="incoming">Chat with {id}</p>
-    <p class="outgoing">Chat with {id}</p>
     </div>
     <form>
         <input type="text" class="chatTxt" name="chatTxt" placeholder="Write message" bind:value={chatTxt}>
@@ -87,38 +85,47 @@ form > i{
 <script>
 import { Link } from "svelte-routing";
 import io from 'socket.io-client';
+const socket = io('http://localhost');
 
 export let id;
 export let firstname;
 export let lastname;
 export let profilePicture;
-export let _id;
+export let userID;
+export let onChat;
+export let message;
+export let sender;
+export let onOpenChat;
 
-const roomName = `${id}-${_id}`
-
-const socket = io()
+const loggedInUser = userID
+const friendID = id
+console.log(loggedInUser, friendID)
+// const socket = io()
 let chatTxt = ""
 // socket.emit('private-chat', id)
+// socket.emit('come-online', `${userID}`)
+console.log(message, sender)
 
 const handleSend = (event) => {
     event.preventDefault()
     console.log(chatTxt)
     const message = chatTxt
-    appendMessage(message, 'outgoing')
-    socket.emit('send-chat-message', roomName, message);
+    appendMessage(loggedInUser, message)
     document.querySelector('.chatTxt').value= ""
+    onOpenChat(message, friendID, loggedInUser)
+
+    // socket.emit('chat-message', message, friendID, loggedInUser);
 }
 
-function appendMessage(message, type) {
+function appendMessage(sender, message) {
+    console.log(sender, message)
     const messageContainer = document.querySelector('.chatContent')
     const messageElement = document.createElement('p');
-    messageElement.className = type
+    // messageElement.className = type
     messageElement.innerText = message;
     messageContainer.append(messageElement)
 }
-socket.on('chat-message', data => {
-    appendMessage(`${data.name}: ${data.message}`,'incoming')
-})
+
 // socket.on('user-connected', name => {
 //     appendMessage(`${name} connected`, 'incoming')
 // })
@@ -130,4 +137,9 @@ const minimizeChat = () => {
     console.log(document.querySelector(`.chat-${id}`))
     document.querySelector(`.chat-${id}`).classList.toggle('minimize')
 }
+const closeChat = (event) => {
+    event.target.parentElement.parentElement.className="hidden"
+}
+
+
 </script>
