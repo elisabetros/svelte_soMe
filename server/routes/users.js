@@ -325,6 +325,7 @@ router.delete('/user', auth.checkToken, async (req, res) => {
         return res.status(200).send({response: dbResponse})
     })
 })
+
 router.put('/user/friendRequest', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const { user } = req.decoded
@@ -354,8 +355,47 @@ router.put('/user/friendRequest', auth.checkToken, async (req, res) => {
         })
 })
 
+router.delete('/user/declineFriendRequest', auth.checkToken, async (req, res) => {
+    console.log('decline request')
+    const { user } = req.decoded
+    const { friendID } = req.body
+    if(!friendID){
+        return res.status(500).send({error: 'Missing ID'})
+    }
+    const friend =  await userCollection.findOne({'_id': ObjectId(friendID)})
+    try{
+        const bulkUpdateOps = [
+            {
+                "updateOne": {
+                    "filter": { "_id":ObjectId(friend._id) },
+                    "update": { "$pull": { "friendRequests": {'friendID': user._id} } } 
+                }
+            },
+            {  
+                 "updateOne": {
+                    "filter": { "_id":ObjectId(friend._id) },
+                    "update": { "$push": { "notifications.notification": { 'message': `${user.firstname} ${user.lastname} declined your friend request`, 'seen': 0 } } } 
+            }
+           },
+            {
+                "updateOne": {
+                    "filter": { "_id": ObjectId(user._id)  },
+                    "update": { "$pull": { "notifications.friendRequests":  {'friendID': friend._id, firstname: friend.firstname, lastname: friend.lastname} } }
+                }
+            }
+        ];
+        
+      await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1})
+      return res.status(200).send({response:'friend request declined'})
+        
+    }catch(err){
+        if(err){console.log(err); 
+        return res.status(500).send({error: 'something went wrong please try again'})
+    }
+    }
+})
 router.delete('/user/friendRequest', auth.checkToken, async (req, res) => {
-    console.log('delete friend request')
+    console.log('cancel friend request')
     const userCollection = db.collection('users')
     const { user } = req.decoded
     const { friendID } = req.body
@@ -515,16 +555,23 @@ router.post('/user/coverImg', auth.checkToken, (req, res) => {
 router.put('/user/notifications', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const { user } = req.decoded
-    // const bla = await userCollection.find({_id: ObjectId(user._id),'notifications.notification.seen': 0}).project({'notifications':1}).toArray()
-    // return res.send({bla})
     try{
-       const updatedUser =  await userCollection.findOneAndUpdate({_id: ObjectId(user._id), "notifications.notification.seen" : 0},
-
-    { $set: { "notifications.notification.$[inner].seen": 1 } },
-        { arrayFilters: [ { 'inner.seen': 0 } ],
-          upsert: true, multi:true }
-)
-       return res.send({response: 'notifications seen'})
+        const bulkUpdateOps = [
+            {
+                "updateMany": {
+                    "filter": { "_id": ObjectId(user._id), "notifications.friendRequests.seen" : 0 },
+                    "update": { "$set": { "notifications.friendRequests.$.seen": 1 } }
+                }
+            },
+            {
+                "updateMany": {
+                    "filter": { "_id": ObjectId(user._id), "notifications.notification.seen" : 0 },
+                    "update": { "$set": { "notifications.notification.$.seen": 1 } }
+                }
+            }
+        ];        
+        await userCollection.bulkWrite(bulkUpdateOps, {"ordered": true, "w": 1})
+        return res.send({response: 'notifications seen'})
     }catch(err){
         if(err){
             console.log(err); 

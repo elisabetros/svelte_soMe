@@ -16,7 +16,7 @@
 
 <!-- ########################### -->
 
-{console.log(allPosts)}
+<!-- {console.log(allPosts)} -->
 <div class="addPost">
     <form enctype='multipart/form-data' class="frmPost">
     <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
@@ -31,7 +31,7 @@
 
 {/each}
 </div>
-{console.log(posts)}
+<!-- {console.log(posts)} -->
 <!-- ########################### -->
 
 <script>

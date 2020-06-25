@@ -25,7 +25,7 @@
        justify-self: right;
    }
    input{
-    width: 300px;
+    width: 200px;
     background: none;
     border-radius: 25px;
     font-size: 90%;
@@ -36,6 +36,13 @@
     background: none;
     color: #009688;
     text-decoration: underline;
+   }
+   form{
+    grid-column: 1/-1;
+    grid-template-columns: 5fr 1fr 1fr;
+    width: 300px;
+    display: grid;
+    grid-template-columns: 10fr 1fr 1fr;
    }
 </style>
 
@@ -48,13 +55,13 @@
         {:else if editComment}
             <form>
                 <input type="text" name="newComment" value={comment} on:change={handleChange}>
+                <button on:click={handleEdit}>Edit</button>
+                <button on:click={handleDelete}>Delete</button>
             </form>
         {/if}
         {#if userID === $user._id && !editComment}
             <div class="btnEdit editComment" on:click={handleEditComment}>...</div>
-        {:else if editComment}
-            <button on:click={handleEdit}>Edit</button>
-            <button on:click={handleDelete}>Delete comment</button>
+       
         {/if}
     </div>
 </div>

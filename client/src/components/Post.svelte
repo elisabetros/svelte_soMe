@@ -180,8 +180,8 @@
             {/if}
             <label>
                 <img src={"http://localhost/userImg/"+ $user.profilePicture} class="profilePicture small">
-                <input type="text" placeholder="Write comment" bind:value={comment} bind:this={commentTxt}/>
-                <button on:click={()=>handleComment(_id)}>Comment</button>
+                <input type="text" placeholder="Write comment" bind:value={comment} />
+                <button on:click={(event)=>handleComment(event,_id)}>Comment</button>
             </label>
         </div>
     {/if}
@@ -193,7 +193,7 @@
              <form enctype='multipart/form-data' class="frmPost">
              <h2>Edit your post</h2>
                 <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small"/>
-                <textarea type="text" value={postContent} name="post" on:change={handleChange}/>
+                <textarea type="text" value={postContent} name="newPostContent" on:change={handleChange}/>
                 <label class="customLabel"><i class="far fa-image"></i> Add image<input type="file" name="picture" on:change={handleChange}></label>
                 <button on:click={handleEdit}>Edit Post</button>
                 <button class="btnDelete" on:click={handleDelete}>Delete Post</button>
@@ -224,7 +224,7 @@ export let comments;
 export let isUsers
 export let userID;
 let editModel = false
-let values = {newPostContent: postContent, newPostImg: postImg}
+let values = {newPostContent: postContent}
 let showComments = false;
 let comment = ""
 let commentTxt = ""
@@ -234,7 +234,7 @@ let editComment= false;
 
 $: count = ""
 
-let postComments = comments
+$: postComments = comments
 
 const checkIfLiked = () => {
     if(likes){
@@ -320,7 +320,7 @@ const handleDelete = async (event) => {
 
 const handleEdit = async (event) => {
     event.preventDefault()
-    console.log(values)
+    // console.log(values.newPostImg.files[0].name)
         if(values.newPostImg !== undefined){
             console.log('with image')
             try{
@@ -328,9 +328,12 @@ const handleEdit = async (event) => {
             formData.set('postID', _id);
             formData.set('newPostContent', values.newPostContent);
             formData.set('newPostImg', values.newPostImg[0]);
-                const response = await axios.put('http://localhost/updatePostWithImage', formData)
-                console.log(response.data)
-                editModel=false
+            const response = await axios.put('http://localhost/updatePostWithImage', formData)
+            console.log(response.data)
+            postImg = response.data.response
+            postContent = values.newPostContent
+            editModel= false
+            
             }catch(err){
                 if(err){console.log(err.response); return; }
             }
@@ -338,6 +341,7 @@ const handleEdit = async (event) => {
             try{
                 const response = await axios.put('http://localhost/updatePost', {'postID': _id, 'newPostContent': values.newPostContent})
                 console.log(response.data)
+                postContent = values.newPostContent;
                 editModel=false
             }catch(err){
                 if(err){console.log(err.response); return; }
@@ -346,19 +350,28 @@ const handleEdit = async (event) => {
     
 }
 
-const handleComment = async (postID) => {
+const handleComment = async (event, postID) => {
     if(comment && postID){
         console.log(comment, postID)
             const token = sessionStorage.getItem('token')
            const config = {headers: { Authorization: `Bearer ${token}` }};
            try{
-               const reponse = await axios.post('http://localhost:80/comment', {postID, comment})
+               const response = await axios.post('http://localhost:80/comment', {postID, comment})
                console.log(response.data)
-               document.querySelector(`.post-${id} comments input`).value=""
-               postComments = [...postComments, {firstname: $user.firstname, lastname: $user.lastname, comment, profilePicture: $user.profilePicture} ]
-                // add comment to dom
+               if(response.data.response){
+                comment = {
+                    firstname: $user.firstname, 
+                    lastname: $user.lastname, 
+                    comment, 
+                    profilePicture: $user.profilePicture
+                }
+               }             
+                postComments = [... postComments, comment]
+                comment=""
            }catch(err){
-               if(err){console.log(err.response); return; }
+               if(err){
+                   console.log(err.response)
+                }
            }
     }
 }

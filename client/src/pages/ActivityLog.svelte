@@ -18,12 +18,18 @@
      .friendRequest{
         justify-content: center;
         display: grid;
-        grid-template-columns: 25fr 10fr;
+        grid-template-columns: 5fr 4fr;
         border-bottom:1px solid #eee;
+    }
+    .friendRequest.incoming{
+        grid-template-columns: 5fr 4fr 4fr;
     }
     button{
         margin:0;
         justify-self: right;
+    }
+    .btnDelete{
+        background-color:#b2b2b2;
     }
     .friendRequest>div p:first-child{
         font-weight: bold;
@@ -46,9 +52,10 @@
     {#if notifications}  
         {#if notifications.friendRequests}  
             {#each notifications.friendRequests as friendRequest}
-                <div class="friendRequest">
+                <div class="friendRequest incoming">
                     <p>{friendRequest.firstname} {friendRequest.lastname}</p>
                     <button on:click={()=>acceptRequest(friendRequest.friendID)}>Accept Friend Request</button>
+                    <button class="btnDelete" on:click={()=>declineRequest(friendRequest.friendID)}>Decline Friend Request</button>
                 </div>
             {/each}
         {/if}
@@ -88,22 +95,37 @@ const cancelRequest = async (id) => {
              }
     }
 }
-
-const acceptRequest = async (id) => {
-try{
-            const response = await axios.put('http://localhost/user/friend', {'friendID': id})
-            console.log(response.data)
-             let newFriendRequests = notifications.friendRequests.filter(friendRequest => {
-                if(friendRequest.friendID !== id){
-                    return friendRequest
-                }
-            })
-            notifications.friendRequests = newFriendRequests
-        }catch(err){
-            if(err){
-                console.log(err.response.data.error); 
+const declineRequest = async (id) => {
+    try{
+        const response = await axios.delete('http://localhost/user/declineFriendRequest', {data:{'friendID': id}})
+        console.log(response.data)
+        let newFriendRequests = notifications.friendRequests.filter(friendRequest => {
+        if(friendRequest.friendID !== id){
+            return friendRequest
             }
+        })
+        notifications.friendRequests = newFriendRequests
+    }catch(err){
+        if(err){
+            console.log(err.response.data.error); 
         }
+    }
+}
+const acceptRequest = async (id) => {
+    try{
+        const response = await axios.put('http://localhost/user/friend', {'friendID': id})
+        console.log(response.data)
+        let newFriendRequests = notifications.friendRequests.filter(friendRequest => {
+            if(friendRequest.friendID !== id){
+                return friendRequest
+            }
+        })
+        notifications.friendRequests = newFriendRequests
+    }catch(err){
+        if(err){
+            console.log(err.response.data.error); 
+        }
+    }
 }
 
 const fetchNotificationsSeen = async () => {
@@ -115,4 +137,6 @@ const fetchNotificationsSeen = async () => {
         if(err){console.log(err.response.data.error);  }
     }
 }
+
+fetchNotificationsSeen()
 </script>

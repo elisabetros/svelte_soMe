@@ -56,16 +56,21 @@ router.post('/postWithImage', auth.checkToken, (req, res) => {
 })
 
 
-router.put('/updatePost', auth.checkToken, (req, res) => {
-    console.log('edit post')
+router.put('/updatePost', auth.checkToken, async (req, res) => {
     const userCollection = db.collection('users')
     const { postID, newPostContent } = req.body
-  userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$set:{'posts.$.postContent': newPostContent}}, (err, dbResponse) => {
+    // console.log(postID, newPostContent)
+    try{
+       await userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$set:{'posts.$.postContent': newPostContent}})
+       return res.status(200).send({response : 'success'})
+        
+    }catch(err){
         if(err){
-            return res.status(500).send({error: err})
-        }
-        return res.status(200).send({dbResponse})
-    })
+            console.log(err); 
+        return res.status(500).send({error: err}); }
+    }
+       
+   
 })
 router.put('/updatePostWithImage', auth.checkToken, (req, res) => {
     console.log('edit post with image')
@@ -81,6 +86,7 @@ router.put('/updatePostWithImage', auth.checkToken, (req, res) => {
             console.log(result.ext)
             const pictureName = uuidv1()+"."+result.ext
             const allowedImageTypes = ["jpg", "jpeg", "png", "gif"]
+
             if(!allowedImageTypes.includes(result.ext)){
                 return res.send({error:"image not allowed"})
             }
@@ -90,12 +96,16 @@ router.put('/updatePostWithImage', auth.checkToken, (req, res) => {
                 if(err){console.log("cannot move file"); return res.send({error: err});}
             
                 console.log(pictureName)
-            userCollection.findOneAndUpdate({'posts._id': ObjectId(fields.postID)}, {$set:{'posts.$.postContent': fields.newPostContent, 'posts.$.postImg': pictureName}}, (err, dbResponse) => {
+            try{
+                await userCollection.findOneAndUpdate({'posts._id': ObjectId(fields.postID)}, {$set:{'posts.$.postContent': fields.newPostContent, 'posts.$.postImg': pictureName}})
+                return res.send({response:pictureName})
+                
+            }catch(err){
                 if(err){
-                    return res.send({error: err})
-                }
-                return res.send({dbResponse})
-            })
+                    console.log(err); 
+                return res.status(500).send({error:'something went wrong'}); }
+            }
+              
             })
         })
     })
@@ -174,12 +184,15 @@ router.post('/comment', auth.checkToken, async (req, res) => {
     }
     try{
         await userCollection.findOneAndUpdate({'posts._id': ObjectId(postID)}, {$push:{'posts.$.comments':{ _id: new ObjectId(), 'userID': user._id, 'firstname': user.firstname, 'lastname': user.lastname, 'comment': comment, 'profilePicture': user.profilePicture }}})
+    //    console.log(update)
+        return res.status(200).send({response: 'success'})
+
     }catch(err){
         if(err){console.log(err)
             return res.status(500).send({error: err})
         }
     }
-    return res.status(200).send({response: 'success'})
+    // return res.status(200).send({response: 'success'})
    
 })
 
@@ -197,7 +210,7 @@ router.delete('/comment', auth.checkToken, async (req, res) => {
 })
 
 router.put('/comment', auth.checkToken, async (req, res) => {
-    console.log('update')
+    // console.log('update')
     // const userCollection = db.collection('users')
     const { postID, commentID, updatedComment } = req.body
     const { user } = req.decoded

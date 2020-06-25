@@ -153,18 +153,15 @@
         {#if isUsers}
             <div class="btn btnUpdate" use:links><a href="/updateprofile"><p>Update Information</p></a></div>
         {:else}
-            {#if friends}
-                {#if friends.includes(_id)}
-                    <div class="btn btnRemoveFriend" on:click={handleRemoveFriend}> Friends</div>
-                 {:else if friendRequests && friendRequests.some( request => request.friendID === user._id)}
-                    <div class="btn btnAddFriend" on:click={handleCancelRequest}>Cancel friend Request</div>
-                {:else}
-                    <div class="btn btnAddFriend" on:click={handleAddFriend}>Send friend Request</div>
-                {/if}
+            {#if friends && friends.includes(_id)}
+                <div class="btn btnRemoveFriend" on:click={handleRemoveFriend}> Friends</div>
+            {:else if friendRequests && friendRequests.find( request => request.friendID === user._id)}
+                <div class="btn btnAddFriend" on:click={handleCancelRequest}>Cancel friend Request</div>
             {:else}
                 <div class="btn btnAddFriend" on:click={handleAddFriend}>Send friend Request</div>
             {/if}
         {/if}
+        
     </div>
     {#if isUsers}
         <div class="addPost">
@@ -183,6 +180,7 @@
             {/each}
         {/if}
     </div>
+    <!-- {console.log(isUsers)} -->
 
 </div>
 <!-- ########################### -->
@@ -192,12 +190,14 @@
     import { links } from "svelte-routing";
     import Post from '../components/Post.svelte'
 
-    // import { user } from '../data.js'
+    import { user as currUser } from '../data.js'
     export let _id;
     export let userID;
     export let friends;
     export let friendRequests
-
+    $: id=""
+    $: !userID? id= "":  id=userID
+    // $: if(!friendRequests) friendRequests= ""
     $: user = {}
     let isUsers = false;
     let values = {}
@@ -296,9 +296,9 @@
 
     const handleCancelRequest = async () => {
            try{
-            const response = await axios.delete('http://localhost/user/friendRequest',  {data:{'friendID': userID}})
+            const response = await axios.delete('http://localhost/user/friendRequest',  {data:{'friendID': id}})
             console.log(response.data)
-            newFriendRequests = friendRequests.filter(request => {
+            let newFriendRequests = friendRequests.filter(request => {
                 if(request.friendID !== user._id){
                     return request
                 }
@@ -311,7 +311,7 @@
     
     const handleRemoveFriend = async () => {
         try{
-            const response = await axios.delete('http://localhost/user/friend',  {data:{'friendID': userID}})
+            const response = await axios.delete('http://localhost/user/friend',  {data:{'friendID': id}})
             console.log(response.data)
         }catch(err){
             if(err){console.log(err.response); }
@@ -320,7 +320,7 @@
     const handleAddFriend = async () => {
         console.log('add friend')
         try{
-            const response = await axios.put('http://localhost/user/friendRequest', {'friendID': userID})
+            const response = await axios.put('http://localhost/user/friendRequest', {'friendID': id})
             console.log(response.data)
            friendRequests = [...friendRequests, {'friendID': user._id, 'firstname': user.firstname, 'lastname': user.lastname}]
         }catch(err){
@@ -328,7 +328,7 @@
         }
     }
     const fetchUser = async () => {
-        const response = await axios(`http://localhost/user/${userID}`)
+        const response = await axios(`http://localhost/user/${id}`)
         console.log(response.data.user)
         user = response.data.user
         if(!user.coverPicture){
@@ -340,6 +340,10 @@
         if(user.posts){
             convertUserPosts()
         }
+        // console.log($currUser._id, id)
+        if($currUser._id === id){
+        isUsers = true;
+    }
     }
     const convertUserPosts = () => {
         user.posts.forEach(post => {
@@ -352,11 +356,13 @@
         date = date.toString().substring(0,21)
         return date
     };
-    if(_id === userID){
-        isUsers = true;
-    }
-        
-    fetchUser()
+    
+
+    setTimeout(() => {
+        fetchUser()
+
+    }, 200)
+    
     
 
 

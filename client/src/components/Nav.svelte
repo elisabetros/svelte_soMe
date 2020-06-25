@@ -333,16 +333,22 @@ let chatCounter = () => {
   }
 }
 let notificationCounter = () => {
-  console.log(Object.keys(notifications))
-  Object.keys(notifications).forEach(key => {
-    if(notifications[key] === 'notification' && !notifications[key].seen){
-      counter = counter +notifications.notification.length
-    }
-    else if(notifications[key] === 'friendRequests' && !notifications[key].seen){
-      counter = counter +notifications.friendRequests.length
-    }
-    
-  })
+  
+  if(notifications.notification){
+    notifications.notification.forEach(notification => {
+      if(!notification.seen){
+        counter++
+      }
+    })
+  }
+  if(notifications.friendRequests){
+    notifications.friendRequests.forEach(request => {
+      if(!request.seen){
+        counter++
+      }
+    })
+  }
+    // console.log(counter)
   if(!counter){
      return false
   }else{

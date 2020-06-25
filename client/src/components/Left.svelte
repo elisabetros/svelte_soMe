@@ -1,7 +1,7 @@
 <style>
 .left{
     position: fixed;
-    top:0;
+    top:2vh;
     left:0;
     height:100%;
     padding:6% 2% 2%;
