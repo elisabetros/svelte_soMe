@@ -453,7 +453,7 @@ router.put('/user/friend', auth.checkToken, async (req, res) => {
         {
             "updateOne": {
                 "filter": { "_id":ObjectId(user._id) },
-                "update": { "$push": { "friends": {'friendID': friendID, firstname: friend.firstname, lastname: friend.lastname, profilePicture: friend.profilePicture} } } 
+                "update": { "$push": { "friends": {'friendID': friendID, firstname: friend.firstname, lastname: friend.lastname, profilePicture: friend.profilePicture, isLoggedIn:friend.isLoggedIn} } } 
             }
         },
         {
@@ -465,7 +465,7 @@ router.put('/user/friend', auth.checkToken, async (req, res) => {
         {
             "updateOne": {
                 "filter": { "_id": ObjectId(friend._id) },
-                "update": { "$push": { "friends":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname, profilePicture: user.profilePicture} } }
+                "update": { "$push": { "friends":  {'friendID': user._id, firstname: user.firstname, lastname: user.lastname, profilePicture: user.profilePicture, isLoggedIn:user.isLoggedIn} } }
             }
         },
         {

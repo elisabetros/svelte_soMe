@@ -5,7 +5,7 @@
     right:0;
     height:100%;
     padding:6% 2% 2%;
-    width:18vw;
+    width:20vw;
     border-left: 1px solid rgba(0,0,0,.1);
     /* background:white; */
     overflow-y: scroll;
@@ -46,6 +46,7 @@ h4{
                 <div class="status"></div>          
             {/if}
         </div>
+            <!-- {console.log(friend)} -->
         {/each}
     {/if} 
 </div>

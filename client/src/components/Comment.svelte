@@ -37,12 +37,16 @@
     color: #009688;
     text-decoration: underline;
    }
+
    form{
     grid-column: 1/-1;
     grid-template-columns: 5fr 1fr 1fr;
     width: 300px;
     display: grid;
     grid-template-columns: 10fr 1fr 1fr;
+   }
+   form button:last-child{
+       color:#b2b2b2;
    }
 </style>
 

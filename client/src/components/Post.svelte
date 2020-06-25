@@ -130,7 +130,7 @@
         color:black;
     }
     .btnDelete{
-        color:red;
+        color:#b2b2b2;
     }
 </style>
 

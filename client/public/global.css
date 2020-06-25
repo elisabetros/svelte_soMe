@@ -103,10 +103,11 @@ input:active, textarea:active{
     border-radius: 0 !important;
 }
 .frmPost button{
-    width: 10vw;
-    margin:0;
+    width: 100%;
+    margin:0 0 .5em 0;
     background:none;
-    color:#009688;
+	color:#009688;
+	text-align: right;
     justify-self: right;
     text-decoration: underline;
 }
@@ -241,3 +242,4 @@ p.incoming{
 	line-height: 0px;
 	cursor: pointer;
 }
+

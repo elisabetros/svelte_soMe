@@ -2,7 +2,7 @@
 nav{
   display: grid;
   grid-template-columns: 25fr 25fr 10fr;
-  grid-gap: 5em;
+  grid-gap: 8%;
   position: fixed;
   top: 0px;
   left: 0px;
