@@ -84,7 +84,11 @@ button:focus {
 	width:30px;
 	height:30px;
   }
-
+input:focus, textarea:focus,
+input:active, textarea:active{
+	border: .5px solid #009688;
+	border-radius: 5px;;
+}
   input{
 	  border-radius:5px;
 
@@ -191,7 +195,7 @@ input[type=file]{
 	border-bottom: none;
   }
   .notificationDropdown a, .chatDropdown p{
-	background-color:#e2e5e8;
+	/* background-color:#e2e5e8; */
 	padding: .8em;
   }
 
@@ -212,19 +216,28 @@ input[type=file]{
 
 p.outgoing{
 	justify-self: right;
+	color:white;
+	background: #009688;
 }
 p.incoming{
 	justify-self: left;
+	background-color: #f1f1f1;
+	color:black;
 }
 
 .chatContent p{
-    border-radius: 5px;
-    background-color:#009688;
-    color:white;
+	padding: 0.5em .7em;
     margin: 0;
     max-width: 164px;
     font-size: 13px;
-    line-height: 16px;
-    padding:.5em;
-    overflow-wrap: break-word;
+	line-height: 16px;
+	border-radius: 15px;
+	overflow-wrap: break-word;
+	align-self: end;
+}
+
+.btnEdit{       
+	color:#009688;
+	line-height: 0px;
+	cursor: pointer;
 }

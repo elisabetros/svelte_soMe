@@ -38,16 +38,16 @@
        grid-row: 1/3;
        justify-self: center
    }
-      .editPost{
+   
+   .editPost{
        font-size: 250%;
-       color:#009688;
        grid-row: 1;
        grid-column: 3;
        align-self: start;
        justify-self: right;
-       line-height: 0px;
-       cursor: pointer;
+       margin-top: .1em;
    }
+   
    .status{
        border:2px solid white;
        background:green;
@@ -101,26 +101,15 @@
        border-radius:25px;
        margin-bottom: 0;
        padding-left:20px;
-   }.comments{
+   }
+   .comments{
        display: grid;
-       grid-gap: 2%;
+       grid-gap: 1em;
    }
-   .comment{
-       border-radius: 25px;
-       background:#e2e5e8;
-       display: flex;
-       padding:.5%;
-   }
-   .comment p{
-       padding:0 0 0 1%;
-       margin:0;
-       line-height: 20px;
-   }
-   .comment p:first-child{
-       font-weight: bold;
-       color: #009688;
-   }
-    
+
+    .comments img{
+        align-self: center;
+    }
     .frmPost h2{
         text-align: center;
         grid-column: 1/-1;
@@ -147,7 +136,7 @@
 
 <!-- ########################### -->
 
-<div class="post" use:links>
+<div class="post post-{_id}" use:links>
     <div class="user">
             <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture" alt="user image">
             {#if isLoggedIn}
@@ -158,7 +147,7 @@
         </a>
             <p class="time">{convertDate()}</p>
         {#if isUsers}
-            <div class="editPost" on:click={showEditModel}>...</div>
+            <div class="btnEdit editPost" on:click={showEditModel}>...</div>
         {/if}
     </div>
     {#if postContent}
@@ -184,16 +173,14 @@
     </div>
     {#if showComments}
         <div class="comments">
-            {#if comments}
-                {#each comments as comment}
-                    <div class="comment">
-                    <p>{comment.firstname} {comment.lastname}</p>
-                    <p>{comment.comment}</p></div>
+            {#if postComments}
+                {#each postComments as comment}
+                    <Comment {...comment} postID={_id} onDeleteComment={handleDeleteComment}/>
                 {/each}
             {/if}
             <label>
-                <img src={"http://localhost/userImg/"+ profilePicture} class="profilePicture small">
-                <input type="text" placeholder="Write comment" bind:value={comment}/>
+                <img src={"http://localhost/userImg/"+ $user.profilePicture} class="profilePicture small">
+                <input type="text" placeholder="Write comment" bind:value={comment} bind:this={commentTxt}/>
                 <button on:click={()=>handleComment(_id)}>Comment</button>
             </label>
         </div>
@@ -215,13 +202,15 @@
     </div>
    {/if}
 </div>
-
+<!-- {console.log($user.)} -->
 <!-- ########################### -->
 
 <script>
 
 import axios from 'axios'
+import Comment from './Comment.svelte'
  import { links } from "svelte-routing";
+ import { user } from '../data.js'
 
 export let postContent;
 export let likes;
@@ -238,8 +227,14 @@ let editModel = false
 let values = {newPostContent: postContent, newPostImg: postImg}
 let showComments = false;
 let comment = ""
+let commentTxt = ""
 let like = false
+let editComment= false;
+
+
 $: count = ""
+
+let postComments = comments
 
 const checkIfLiked = () => {
     if(likes){
@@ -308,7 +303,7 @@ const handleChange = (event) => {
         document.querySelector('.customLabel').innerHTML ="<span></span>"+ fileName;
         values.newPostImg = event.target.files
     }else{
-        values.newPostContent = event.target.value
+        values[event.target.name] = event.target.value
     }
 }
 const handleDelete = async (event) => {
@@ -358,13 +353,18 @@ const handleComment = async (postID) => {
            const config = {headers: { Authorization: `Bearer ${token}` }};
            try{
                const reponse = await axios.post('http://localhost:80/comment', {postID, comment})
-               console.log(response)
+               console.log(response.data)
+               document.querySelector(`.post-${id} comments input`).value=""
+               postComments = [...postComments, {firstname: $user.firstname, lastname: $user.lastname, comment, profilePicture: $user.profilePicture} ]
+                // add comment to dom
            }catch(err){
                if(err){console.log(err.response); return; }
            }
     }
 }
-
+const handleDeleteComment = (id) => {
+    document.querySelector('.comment-'+id).remove()
+}
 const likeCount = () => {
     if(likes){
         count = likes.length 

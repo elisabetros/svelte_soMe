@@ -43,6 +43,7 @@ router.get('/user/:id', async (req, res) => {
 })
 
 router.post('/user/register', async (req, res) => {
+    console.log('signup')
     const userCollection = db.collection('users')
     const { firstname, lastname, email, password, repeatPassword } = req.body
     if(!firstname || !lastname || !password || !email || !repeatPassword){
@@ -61,25 +62,26 @@ router.post('/user/register', async (req, res) => {
     if(user){
         return res.status(500).send({error: 'User already exists'})
     }
-
-    bcrypt.hash(password, saltRounds, async (error, hashedPassword) => {
-        if(error){
-            return res.status(500).send({ error: "Couldn't hash password" })
-        }
-        userCollection.insertOne({ 
-            firstname,
-            lastname,
-            email,
-            password: hashedPassword,
-            isLoggedIn:false
-        }, function(err, result) {
-            if(err){
-                console.log(err);
-                 return res.status(500).send({error: 'Could not insert'});
-                }
-           return res.status(200).send(result.insertedId)
-        })           
-    })
+    try{
+        bcrypt.hash(password, saltRounds, async (error, hashedPassword) => {
+            if(error){
+                return res.status(500).send({ error: "Couldn't hash password" })
+            }
+          await  userCollection.insertOne({ 
+                firstname,
+                lastname,
+                email,
+                password: hashedPassword,
+                isLoggedIn:false
+            })
+                
+            return res.status(200).send({response: 'success'})
+                    
+        })
+    }catch(err){
+        if(err){console.log(err); return res.status(500).send({error: 'Could not insert'}); }
+    }
+ 
 })
 
 router.put('/user/login', async (req, res) => {
@@ -129,8 +131,14 @@ router.put('/user/login', async (req, res) => {
             const result = await userCollection.bulkWrite(bulkUpdateOps)
              console.log(result)       
           
-             delete user.password
-             jwt.sign({user}, config.secretKey, { expiresIn: '24h' } ,(err, token) => {
+             userInfo = {
+                 _id :user._id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                profilePicture: user.profilePicture,
+                isLoggedIn: user.isLoggedIn
+             }
+             jwt.sign({user: userInfo}, config.secretKey, { expiresIn: '24h' } ,(err, token) => {
                  if(err) {
                    console.log(err) 
                   return res.status(500).send({error: 'Could not create token'})

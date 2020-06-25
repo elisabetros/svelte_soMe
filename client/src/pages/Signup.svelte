@@ -38,7 +38,7 @@
         color:red;
         padding:0;
         margin:0;
-        grid-column:2;
+        grid-column:1/-1;
         text-align: left;
     }
     .loginBtn{
@@ -221,20 +221,22 @@ const validateAndSubmit = async (event) => {
         errors.password = "Passwords must match"
         errors.repeatPassword = "Passwords must match"
     }
-    console.log(errors)
+    // console.log(errors)
     if(Object.keys(errors).length === 0){
           isLoading = true;
-            console.log('signup')
+        console.log('signup')
       try{
-        const reponse = await axios.post('http://localhost:80/user/register', {firstname, lastname, email, password, repeatPassword})
-        console.log(response)
-        login = true
-        isLoading = false;
+        const response = await axios.post('http://localhost:80/user/register', {firstname, lastname, email, password, repeatPassword})
+        console.log(response.data)
+        if(response.data.response === 'success'){
+            login = true
+            isLoading = false;
+        }
       }catch(err){
           if(err){
-            console.log(err.response.data);
+            // console.log(err.response.data);
             isLoading = false;
-            errors.signupGlobal = err.response.data.error
+            // errors.signupGlobal = err.response.data.error
         }
       }
         

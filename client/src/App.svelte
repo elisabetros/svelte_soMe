@@ -16,7 +16,7 @@ import { chats } from './data.js'
 
 import axios from 'axios'
 import { Router, Route, Link } from "svelte-routing";
-
+import { onMount } from 'svelte'
 
 $: isLoggedIn= false
 
@@ -27,7 +27,7 @@ let isLoading = true;
 export let url = "";
 
 const checkIfUserOnline = async ()=>{
-	console.log('message')
+	// console.log('message')
 	if(sessionStorage.getItem('token')){
 		let token = sessionStorage.getItem('token')		
 		axios.defaults.headers.common = {'Authorization': `bearer ${token}`}
@@ -42,7 +42,15 @@ const checkIfUserOnline = async ()=>{
 				console.log($user)
 				if(!$user.profilePicture){
 					  $user.profilePicture = 'standard.png'
-				}	
+				}
+				if($user.friends){
+					$user.friends.forEach(friend => {
+				// console.log(friend)
+						if(!friend.profilePicture){
+							friend.profilePicture = 'standard.png'
+						}
+        			});
+   	 			}	
 				console.log($user.posts)
 				// socket.emit('come-online', user._id)	
 
@@ -54,10 +62,10 @@ const checkIfUserOnline = async ()=>{
 		isLoading = false
 	}
 }
-
-window.addEventListener('load',()=> {
+onMount(() => {
 	checkIfUserOnline()
 })
+
 const handleLogin = (data) =>{
 	isLoggedIn = data
 	checkIfUserOnline()
@@ -78,7 +86,6 @@ const handleLogout = async (data) => {
 }
 
 const handleOpenChat = (data) => {
-	// console.log('show chat window with ', id)
 	$chats = [...$chats, {...data}]
 	console.log($chats)
 }
@@ -94,7 +101,7 @@ const handleOpenChat = (data) => {
 			<Loader />			
 	{:else}
 		{#if isLoggedIn}
-			<Nav {...$user} onLogout={handleLogout} />
+			<Nav {...$user} onLogout={handleLogout} notifications={$user.notifications} onOpenChat={handleOpenChat}/>
 			<Route path="/updateprofile">
 					<UpdateProfile />
 			</Route> 

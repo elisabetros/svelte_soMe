@@ -67,7 +67,7 @@ io.on("connection", (socket) => {
             {
                 "updateOne": {
                     "filter": { "_id":ObjectId(toUser._id), 'friends.friendID': fromUser._id.toString() },
-                    "update": {$push: { 'friends.$.chat': message, "notifications.chats": { 'userID': fromUser._id, 'name': fromUser.firstname + " "+ fromUser.lastname, 'timestamp': timestamp}  } }
+                    "update": {$push: { 'friends.$.chat': message, "notifications.chats": { 'userID': fromUser._id, 'name': fromUser.firstname + " "+ fromUser.lastname, 'seen': 0, 'profilePicture': fromUser.profilePicture}  } }
                 }
             },
             {
@@ -118,31 +118,6 @@ io.on("connection", (socket) => {
     });
   });
 });
-
-        // console.log(message, receiver, sender)
-        // try{
-        //     const receivingUser = await db.collection('users').findOne({_id: ObjectId(receiver)})
-        //     const senderUser = await db.collection('users').findOne({_id: ObjectId(sender)})
-        //     console.log(receivingUser)
-        //     if(receivingUser.isLoggedIn){
-        //         getChatSocket(receiver).emit('chat_message',message, sender);
-        //     }else{
-        //         await db.collection('users').findOneAndUpdate({_id: ObjectId(receiver)}, 
-        //         {$push: {'chats': {'fromID': sender, 'from': senderUser.firstname +" "+ senderUser.lastname, 'message': message, 'seen': false}}}, (err, dbRes) => {
-        //             if(err){console.log(err); return;}
-        //             console.log(dbRes)
-        //             getChatSocket(receiver).emit('chat_message',message, sender);
-        //         })
-        //     }
-            
-        // }catch(err){
-        //     if(err){console.log(err); return; }
-        // }
-    
-
-
-
-
 
 
 // ############################

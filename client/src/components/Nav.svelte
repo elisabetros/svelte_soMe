@@ -236,34 +236,35 @@ a:visited, a, a:hover{
     <div class="right">
       <div>
         <i class="far fa-comment" on:click={showUnSeenChats}></i>
-        {#if chats}
-          <div class="chat-counter">{chats.length}</div>       
+        {#if notifications && chatCounter()}
+           <div class="chat-counter">{cCounter}</div>       
         {/if}
         <div class="chatDropdown dropDown hidden">
          <h4>Messages</h4>
-          {#if chats}
-            {#each chats as chat}
-              <p on:click={()=>openChat(chat.fromID)}><strong>{chat.from}:</strong> {chat.message}</p>
-            {/each}
-          {/if}
+           {#if notifications && notifications.chats}
+            {#each notifications.chats as chat}
+              <p style='background-color:{chat.seen? 'white': '#e2e5e8'};' on:click={()=>openChat(chat.userID)}><strong>{chat.name}:</strong> sent you a message</p>
+            {/each} 
+          {/if} 
         </div>
       </div>
       <div>
         <i class="far fa-bell" on:click={showNotifications}></i> 
-        {#if counter > 0}
-          <div class="notification-counter">{notificationCounter()}</div> 
+        {#if notifications && notificationCounter()}
+          <div class="notification-counter">{counter}</div> 
         {/if}
           <div class="notificationDropdown dropDown hidden">
           {#if notifications}
           <h4>Notifications</h4>
           {#if notifications.hasOwnProperty('friendRequests')}
             {#each notifications.friendRequests as request}
-              <a href="/activitylog"><strong>{request.firstname} {request.lastname} </strong>sent you a friend request</a>
+            <!-- {if reqe} -->
+              <a style='background-color:{request.seen? 'white': '#e2e5e8'};' href="/activitylog"><strong>{request.firstname} {request.lastname} </strong>sent you a friend request</a>
             {/each}
           {/if}
           {#if notifications.notification}
             {#each notifications.notification as notification}
-              <a href="/activitylog">{notification.message}</a>
+              <a href="/activitylog" style='background-color:{notification.seen? 'white': '#e2e5e8'};'>{notification.message}</a>
             {/each}
           {/if}
         {/if}
@@ -283,7 +284,7 @@ a:visited, a, a:hover{
   </nav>
 </Router>
 {
-  console.log(chats)
+  console.log(notifications)
 }
 <!-- ########################### -->
 
@@ -298,29 +299,54 @@ export let profilePicture;
 export let onLogout;
 export let _id;
 export let notifications;
-export let chats;
-export let userChats;
+export let onOpenChat;
 
-let counter= 0
+$: counter= 0
+$: cCounter = 0;
 
 const openChat = (senderID) => {
-  let data = chats.find(chat => chat.fromID === senderID)
-  userChats(data)
+  let friend = notifications.chats.find(chat => chat.userID === senderID)
+  // console.log(friend)
+  let data = {
+    name : friend.name,
+    id : senderID,
+    profilePicture : friend.profilePicture
+  }  
+  onOpenChat(data)
+  showUnSeenChats()
+  cCounter= cCounter - notifications.chats.filter(chat=> chat.userID === senderID).length
+  // console.log(cCounter)
+}
+
+let chatCounter = () => {
+  if(notifications.chats){
+    notifications.chats.forEach(chat => {
+      if(!chat.seen){
+         cCounter++
+      }
+    })
+  } 
+  if(cCounter){
+    return true
+  }else{
+    return false
+  }
 }
 let notificationCounter = () => {
   console.log(Object.keys(notifications))
   Object.keys(notifications).forEach(key => {
     if(notifications[key] === 'notification' && !notifications[key].seen){
-      counter = counter +notifications[key].length
+      counter = counter +notifications.notification.length
     }
-    else{
-      counter =""
+    else if(notifications[key] === 'friendRequests' && !notifications[key].seen){
+      counter = counter +notifications.friendRequests.length
     }
+    
   })
   if(!counter){
-     return counter =""
+     return false
   }else{
-    return counter
+    return true
   }
 }
 

@@ -1,0 +1,6 @@
+Add posts when posted on profile
+
+fetch friend posts once friend request is accepted
+add delete friend request
+Fix update page, changes all not filled in fields  to undefined
+

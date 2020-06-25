@@ -60,24 +60,13 @@ export let onChat;
 const showChat = (id) => {
     console.log('chat')
     const friend = $user.friends.find(friend=> friend.friendID === id)
-    // console.log(friend)
     let data = {
-        firstname: friend.firstname,
-        lastname: friend.lastname,
+        name: friend.firstname +' '+ friend.lastname,
         id: friend.friendID,
         profilePicture: friend.profilePicture
     }
-    console.log(data)
+    // console.log(data)
     onChat(data)
 }
-setTimeout(() => {
-    if($user.friends){
-        $user.friends.forEach(friend => {
-            console.log(friend)
-            if(!friend.profilePicture){
-                friend.profilePicture = 'standard.png'
-            }
-        });
-    }
-}, 1000)
+
 </script>
